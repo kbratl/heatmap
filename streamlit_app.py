@@ -180,6 +180,6 @@ html = f"""
 </html>
 """
 
-
+# The rest of your Streamlit code remains unchanged
 # Render the component
 st.components.v1.html(html, height=1200)
