@@ -119,26 +119,24 @@ html = f"""
             height: 100%;
         }}
         .matrix-container {{
-            overflow: auto;
-            height: 80vh;
             width: 100%;
-            padding: 20px;
+            overflow: visible;  /* Disable scrolling */
         }}
         table {{
             border-collapse: collapse;
-            width: max-content;  /* Allow table to expand as needed */
+            width: 100%;  /* Use full width */
         }}
         th, td {{
             border: 1px solid #ddd;
             padding: 12px;
             text-align: left;
-            min-width: 200px;  /* Minimum column width */
-            max-width: 200px;  /* Maximum column width */
+            min-width: 150px;  /* Adjust column width */
+            max-width: 150px;  /* Prevent column expansion */
             white-space: normal;  /* Allow text wrapping */
             background: white;
         }}
         th:first-child, td:first-child {{
-            min-width: 300px;  /* Wider first column */
+            min-width: 200px;  /* Wider first column */
             position: sticky;
             left: 0;
             z-index: 2;
