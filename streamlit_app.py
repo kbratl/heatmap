@@ -30,7 +30,7 @@ filters_data = {
              "Engineer", "Manager", "President", "Vice President"],
 }
 
-# Configure cell quotes
+# Configure cell quotes (updated with leadership commitment example)
 cell_quotes = {
     "0,0": {
         "quotes": ["Chocolate", "Yes we can make a dynamic heatmap matrix work :)"],
@@ -45,6 +45,13 @@ cell_quotes = {
         "quotes": ["Will we display all the quotes",
                  "We might change the design this is just a prototype..."],
         "filters": {"Roles": ["Consultant"]}
+    },
+    # Add example for "Leadership Commitment" X "Products"
+    # Assuming "Leadership Commitment" is row index 4 and "Products" is column index 1
+    "4,1": {
+        "quotes": ["Leadership should drive flexibility initiatives",
+                 "Regular review meetings with product teams"],
+        "filters": {"Organisation Types": ["Client"]}
     }
 }
 
@@ -90,9 +97,9 @@ highlighted_cells = []
 if st.session_state.applied_filters:
     main_filter, subfilter = st.session_state.applied_filters
     for coord, data in cell_quotes.items():
-        if main_filter in data.get("filters", {}):
-            if subfilter in data["filters"][main_filter]:
-                highlighted_cells.append(coord)
+        # Check if cell has filters matching the current selection
+        if data["filters"].get(main_filter) and subfilter in data["filters"][main_filter]:
+            highlighted_cells.append(coord)
 
 # Show disclaimer only when filters are applied
 if st.session_state.applied_filters:
@@ -120,24 +127,31 @@ html = f"""
         }}
         .matrix-container {{
             width: 100%;
-            height: 800px;  /* Fixed height for the container */
-            overflow: auto;  /* Enable scrolling within the container */
+            height: 80vh;
+            overflow: auto;
+            position: relative;
         }}
         table {{
             border-collapse: collapse;
-            width: 100%;  /* Use full width */
+            min-width: max-content;
         }}
         th, td {{
             border: 1px solid #ddd;
             padding: 12px;
             text-align: left;
-            min-width: 150px;  /* Adjust column width */
-            max-width: 150px;  /* Prevent column expansion */
-            white-space: normal;  /* Allow text wrapping */
+            min-width: 150px;
+            max-width: 150px;
+            white-space: normal;
             background: white;
+            position: relative;
         }}
-        th:first-child, td:first-child {{
-            min-width: 200px;  /* Wider first column */
+        th:first-child {{
+            position: sticky;
+            left: 0;
+            z-index: 3;
+            background: #f8f9fa;
+        }}
+        td:first-child {{
             position: sticky;
             left: 0;
             z-index: 2;
@@ -146,15 +160,12 @@ html = f"""
         th {{
             position: sticky;
             top: 0;
+            z-index: 2;
             background: #f8f9fa;
-            z-index: 3;
-        }}
-        tr:nth-child(even) td {{
-            background-color: #f9f9f9;
         }}
         .dimmed {{ 
-            background: #f8f9fa; 
-            color: #999; 
+            background: #f8f9fa !important; 
+            color: #999 !important; 
         }}
         .highlighted {{
             background: #e3f2fd !important; 
@@ -201,9 +212,9 @@ html = f"""
                     
                     rowHtml += `
                         <td class="${{cellClass}}"
-                            data-quotes='${{JSON.stringify(quotes)}}'
-                            onmouseover="showTooltip(event)"
-                            onmouseout="hideTooltip()">
+                            ${{isHighlighted ? `data-quotes='${{JSON.stringify(quotes)}}'` : ''}}
+                            onmouseover="${{isHighlighted ? 'showTooltip(event)' : ''}}"
+                            onmouseout="${{isHighlighted ? 'hideTooltip()' : ''}}">
                             ${{content}}
                         </td>
                     `;
