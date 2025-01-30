@@ -120,7 +120,8 @@ html = f"""
         }}
         .matrix-container {{
             width: 100%;
-            overflow: visible;  /* Disable scrolling */
+            height: 800px;  /* Fixed height for the container */
+            overflow: auto;  /* Enable scrolling within the container */
         }}
         table {{
             border-collapse: collapse;
