@@ -1,4 +1,3 @@
-# Update the HTML styling section with these changes
 html = f"""
 <!DOCTYPE html>
 <html>
@@ -7,18 +6,16 @@ html = f"""
         body {{ 
             font-family: Arial, sans-serif; 
             margin: 0;
-            height: 100vh;
-            overflow: auto;
+            height: 100%;
         }}
         .matrix-container {{
-            max-width: 100%;
             overflow: auto;
-            margin: 20px;
+            height: 100vh;
+            padding: 20px;
         }}
         table {{
             border-collapse: collapse;
             min-width: 800px;
-            margin-top: 20px;
         }}
         th, td {{
             border: 1px solid #ddd;
@@ -35,6 +32,8 @@ html = f"""
             left: 0;
             z-index: 2;
             background: #f8f9fa;
+            position: sticky;
+            left: 0;
         }}
         th {{
             background: #f8f9fa;
@@ -67,12 +66,11 @@ html = f"""
         <table id="matrixTable"></table>
     </div>
 
-    <script>
-        // ... (keep the existing JavaScript code unchanged) ...
-    </script>
+    <!-- Keep the existing JavaScript -->
 </body>
 </html>
 """
 
-# Update the components.html call to use scrolling:
-st.components.v1.html(html, height=1000, scrolling=True)
+# This is the corrected components call:
+st.components.v1.html(html, height=1200)
+
