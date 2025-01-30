@@ -107,13 +107,71 @@ matrix_data = {
     "highlighted_cells": highlighted_cells,
 }
 
-
-# Update the JavaScript section in the HTML component:
+# HTML/JavaScript component
 html = f"""
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- Keep the existing CSS styles -->
+    <style>
+        body {{ 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            height: 100%;
+        }}
+        .matrix-container {{
+            overflow: auto;
+            height: 100vh;
+            padding: 20px;
+        }}
+        table {{
+            border-collapse: collapse;
+            min-width: 800px;
+        }}
+        th, td {{
+              border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            width: 200px;  /* Fixed column width */
+            min-width: 200px;  /* Prevent column shrinking */
+            max-width: 200px;  /* Prevent column expanding */
+            background: white;
+        }}
+        th:first-child, td:first-child {{
+            width: 300px;
+            min-width: 300px;
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #f8f9fa;
+        }}
+        th {{
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            z-index: 3;
+        }}
+        tr:nth-child(even) td {{
+            background-color: #f9f9f9;
+        }}
+        .dimmed {{ 
+            background: #f8f9fa; 
+            color: #999; 
+        }}
+        .highlighted {{
+            background: #e3f2fd !important; 
+            border: 2px solid #2196f3 !important;
+        }}
+        .tooltip {{
+            position: fixed;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 300px;
+            z-index: 1000;
+        }}
+    </style>
 </head>
 <body>
     <div class="matrix-container">
@@ -154,8 +212,7 @@ html = f"""
                 table.innerHTML += rowHtml + '</tr>';
             }});
         }}
-
-        // Rest of the JavaScript functions remain the same
+        
         function showTooltip(event) {{
             const quotes = JSON.parse(event.target.dataset.quotes);
             if (!quotes.length) return;
@@ -180,8 +237,6 @@ html = f"""
 </body>
 </html>
 """
-
-# The rest of your Streamlit code remains unchanged
 
 # Render the component
 st.components.v1.html(html, height=1200)
