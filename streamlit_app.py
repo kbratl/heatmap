@@ -120,27 +120,25 @@ html = f"""
         }}
         .matrix-container {{
             overflow: auto;
-            height: 100vh;
+            height: 80vh;
+            width: 100%;
             padding: 20px;
-            max-width: 100vw;  /* Ensure full width */
         }}
         table {{
             border-collapse: collapse;
-            min-width: {300 + 200 * len(column_names)}px;  /* Dynamic width based on columns */
+            width: max-content;  /* Allow table to expand as needed */
         }}
         th, td {{
             border: 1px solid #ddd;
             padding: 12px;
             text-align: left;
-            width: 200px;  /* Fixed column width */
-            min-width: 200px;  /* Prevent column shrinking */
-            max-width: 200px;  /* Prevent column expanding */
+            min-width: 200px;  /* Minimum column width */
+            max-width: 200px;  /* Maximum column width */
             white-space: normal;  /* Allow text wrapping */
             background: white;
         }}
         th:first-child, td:first-child {{
-            width: 300px;
-            min-width: 300px;
+            min-width: 300px;  /* Wider first column */
             position: sticky;
             left: 0;
             z-index: 2;
@@ -241,4 +239,4 @@ html = f"""
 """
 
 # Render the component
-st.components.v1.html(html, height=1200)
+st.components.v1.html(html, height=800)
