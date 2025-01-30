@@ -1,104 +1,87 @@
-pip install streamlit-aggrid
 import streamlit as st
 import pandas as pd
 
-# Configure app
-st.set_page_config(page_title="Flexibility Contributing Factors Heatmap Matrix", layout="wide")
+# Load and prepare data
+file_path = "matrix explained.xlsx"
+try:
+    df = pd.read_excel(file_path, index_col=0)
+    df.index = df.index.str.strip()
+    df.columns = ['Processes', 'Products', 'Tools']
+    row_names = df.index.tolist()
+    column_names = df.columns.tolist()
+except Exception as e:
+    st.error(f"Error loading Excel file: {e}")
+    st.stop()
 
-# Load data
-@st.cache_data
-def load_data():
-    try:
-        df = pd.read_excel("matrix explained.xlsx", index_col=0)
-        df.index = df.index.str.strip()
-        df.columns = ['Processes', 'Products', 'Tools']
-        return df
-    except Exception as e:
-        st.error(f"Error loading Excel file: {e}")
-        return pd.DataFrame()
+# Build definitions dictionary
+definitions = {
+    row: {col: str(df.at[row, col]) for col in column_names}
+    for row in row_names
+}
 
-df = load_data()
-
-# Configuration
+# Configure filters
 filters_data = {
     "Phases": ["Monitoring", "Pre-Contract", "Planning", "Execution", "Delivery"],
-    "Roles": ["Consultant", "Engineer", "Manager"]
+    "Investment Types": ["Public", "Private", "PPP"],
+    "Contract Types": ["Fixed Price", "Time & Material", "Cost Plus"],
+    "Organisation Types": ["Client", "Contractor", "Consultant"],
+    "Roles": ["Analyst", "Architect", "Consultant", "Director", "Engineer", "Manager", "President", "Vice President"],
 }
 
+# Configure cell quotes with proper coordinates
 cell_quotes = {
-    ("Pre-Contract Motivations", "Processes"): [
-        "Chocolate", 
-        "Yes we can make a dynamic heatmap matrix work :)"
-    ],
-    ("Leadership commitment to being flexible", "Products"): [
-        "I think deepseek's R1 model is better for fixing code errors",
-        "An americano with an extra shot"
-    ]
+    "0,0": {  # Pre-Contract Motivations x Processes
+        "quotes": ["Chocolate", "Yes we can make a dynamic heatmap matrix work :)"],
+        "filters": {"Roles": ["Consultant"]}
+    },
+    "6,1": {  # Leadership commitment x Products (row 6, column 1)
+        "quotes": ["I think deepseek's R1 model is better for fixing code errors", 
+                 "An americano with an extra shot"],
+        "filters": {"Roles": ["Consultant"]}
+    },
+    "9,2": {  # Long-term perspective x Tools (row 9, column 2)
+        "quotes": ["Will we display all the quotes", 
+                 "We might change the design this is just a prototype, we can make it more aesthetically pleasing and colorful!"],
+        "filters": {"Roles": ["Consultant"]}
+    }
 }
 
-# Create filters
-col1, col2 = st.columns(2)
-with col1:
-    main_filter = st.selectbox("Main Filter", ["Select Filter"] + list(filters_data.keys()))
-with col2:
-    subfilter = st.selectbox("Subfilter", ["Select Subfilter"] + (filters_data.get(main_filter, []) if main_filter != "Select Filter" else []))
+# Streamlit UI
+st.title("Flexibility Matrix Explorer")
 
-# Generate HTML table
-table_html = """
-<style>
-    .matrix-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-    }
-    .matrix-table th, .matrix-table td {
-        border: 1px solid #ddd;
-        padding: 12px;
-        text-align: left;
-    }
-    .matrix-table th {
-        background-color: #1a73e8;
-        color: white;
-    }
-    .highlighted {
-        background-color: #e8f0fe;
-        border: 2px solid #1a73e8 !important;
-    }
-</style>
+# Filters
+main_filter = st.selectbox("Select Main Filter", [""] + list(filters_data.keys()))
+subfilter_options = filters_data.get(main_filter, [])
+subfilter = st.selectbox("Select Subfilter", [""] + subfilter_options)
 
-<table class='matrix-table'>
-    <tr>
-        <th>Factors</th>
-        <th>Processes</th>
-        <th>Products</th>
-        <th>Tools</th>
-    </tr>
-"""
+# Apply Filters
+if st.button("Apply Filters"):
+    highlighted = []
+    for coord, data in cell_quotes.items():
+        if main_filter in data.get("filters", {}):
+            if subfilter in data["filters"][main_filter]:
+                highlighted.append(coord)
+    
+    # Display the matrix
+    st.write("### Matrix")
+    for row_idx, row_name in enumerate(row_names):
+        cols = st.columns(len(column_names) + 1)
+        cols[0].write(row_name)
+        for col_idx, col_name in enumerate(column_names):
+            cell_key = f"{row_idx},{col_idx}"
+            cell_value = definitions[row_name][col_name]
+            if cell_key in highlighted:
+                cols[col_idx + 1].markdown(f"**{cell_value}**", unsafe_allow_html=True)
+            else:
+                cols[col_idx + 1].write(cell_value)
 
-for idx, row in enumerate(df.index):
-    table_html += f"""
-    <tr>
-        <td><strong>{row}</strong></td>
-        <td{' class="highlighted"' if (row, 'Processes') in cell_quotes else ''}>{df.loc[row, 'Processes']}</td>
-        <td{' class="highlighted"' if (row, 'Products') in cell_quotes else ''}>{df.loc[row, 'Products']}</td>
-        <td{' class="highlighted"' if (row, 'Tools') in cell_quotes else ''}>{df.loc[row, 'Tools']}</td>
-    </tr>
-    """
-
-table_html += "</table>"
-
-# Display the matrix
-st.markdown(table_html, unsafe_allow_html=True)
-
-# Add tooltips
-st.markdown("""
-<script>
-// Simple hover tooltip implementation
-document.querySelectorAll('.highlighted').forEach(cell => {
-    cell.addEventListener('mouseover', function(e) {
-        this.style.cursor = 'pointer';
-        this.title = "Quotes:\\n- " + %s;
-    });
-});
-</script>
-""" % str(list(cell_quotes.values())).replace("'", ""), unsafe_allow_html=True)
+# Display quotes on hover
+st.write("### Hover over cells to see quotes")
+for row_idx, row_name in enumerate(row_names):
+    for col_idx, col_name in enumerate(column_names):
+        cell_key = f"{row_idx},{col_idx}"
+        quotes = cell_quotes.get(cell_key, {}).get("quotes", [])
+        if quotes:
+            st.write(f"**{row_name} - {col_name}**")
+            for quote in quotes:
+                st.write(f"- {quote}")
