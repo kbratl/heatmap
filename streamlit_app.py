@@ -122,18 +122,20 @@ html = f"""
             overflow: auto;
             height: 100vh;
             padding: 20px;
+            max-width: 100vw;  /* Ensure full width */
         }}
         table {{
             border-collapse: collapse;
-            min-width: 800px;
+            min-width: {300 + 200 * len(column_names)}px;  /* Dynamic width based on columns */
         }}
         th, td {{
-              border: 1px solid #ddd;
+            border: 1px solid #ddd;
             padding: 12px;
             text-align: left;
             width: 200px;  /* Fixed column width */
             min-width: 200px;  /* Prevent column shrinking */
             max-width: 200px;  /* Prevent column expanding */
+            white-space: normal;  /* Allow text wrapping */
             background: white;
         }}
         th:first-child, td:first-child {{
