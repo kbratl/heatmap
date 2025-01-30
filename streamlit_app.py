@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import json
 
 # Load and prepare data
 file_path = "matrix explained.xlsx"
@@ -25,23 +26,24 @@ filters_data = {
     "Investment Types": ["Public", "Private", "PPP"],
     "Contract Types": ["Fixed Price", "Time & Material", "Cost Plus"],
     "Organisation Types": ["Client", "Contractor", "Consultant"],
-    "Roles": ["Analyst", "Architect", "Consultant", "Director", "Engineer", "Manager", "President", "Vice President"],
+    "Roles": ["Analyst", "Architect", "Consultant", "Director", 
+             "Engineer", "Manager", "President", "Vice President"],
 }
 
-# Configure cell quotes with proper coordinates
+# Configure cell quotes
 cell_quotes = {
-    "0,0": {  # Pre-Contract Motivations x Processes
+    "0,0": {
         "quotes": ["Chocolate", "Yes we can make a dynamic heatmap matrix work :)"],
         "filters": {"Roles": ["Consultant"]}
     },
-    "6,1": {  # Leadership commitment x Products (row 6, column 1)
-        "quotes": ["I think deepseek's R1 model is better for fixing code errors", 
+    "6,1": {
+        "quotes": ["I think deepseek's R1 model is better for fixing code errors",
                  "An americano with an extra shot"],
         "filters": {"Roles": ["Consultant"]}
     },
-    "9,2": {  # Long-term perspective x Tools (row 9, column 2)
-        "quotes": ["Will we display all the quotes", 
-                 "We might change the design this is just a prototype, we can make it more aesthetically pleasing and colorful!"],
+    "9,2": {
+        "quotes": ["Will we display all the quotes",
+                 "We might change the design this is just a prototype..."],
         "filters": {"Roles": ["Consultant"]}
     }
 }
@@ -49,39 +51,125 @@ cell_quotes = {
 # Streamlit UI
 st.title("Flexibility Matrix Explorer")
 
-# Filters
-main_filter = st.selectbox("Select Main Filter", [""] + list(filters_data.keys()))
-subfilter_options = filters_data.get(main_filter, [])
-subfilter = st.selectbox("Select Subfilter", [""] + subfilter_options)
+# Filter selection
+col1, col2 = st.columns(2)
+with col1:
+    main_filter = st.selectbox(
+        "Select Main Filter",
+        [""] + list(filters_data.keys()),
+        key="main_filter"
+    )
 
-# Apply Filters
-if st.button("Apply Filters"):
-    highlighted = []
+subfilter_options = [""] + filters_data[main_filter] if main_filter else [""]
+with col2:
+    subfilter = st.selectbox(
+        "Select Subfilter",
+        subfilter_options,
+        key="subfilter"
+    )
+
+# Calculate highlighted cells
+highlighted_cells = []
+if main_filter and subfilter:
     for coord, data in cell_quotes.items():
         if main_filter in data.get("filters", {}):
             if subfilter in data["filters"][main_filter]:
-                highlighted.append(coord)
-    
-    # Display the matrix
-    st.write("### Matrix")
-    for row_idx, row_name in enumerate(row_names):
-        cols = st.columns(len(column_names) + 1)
-        cols[0].write(row_name)
-        for col_idx, col_name in enumerate(column_names):
-            cell_key = f"{row_idx},{col_idx}"
-            cell_value = definitions[row_name][col_name]
-            if cell_key in highlighted:
-                cols[col_idx + 1].markdown(f"**{cell_value}**", unsafe_allow_html=True)
-            else:
-                cols[col_idx + 1].write(cell_value)
+                highlighted_cells.append(coord)
 
-# Display quotes on hover
-st.write("### Hover over cells to see quotes")
-for row_idx, row_name in enumerate(row_names):
-    for col_idx, col_name in enumerate(column_names):
-        cell_key = f"{row_idx},{col_idx}"
-        quotes = cell_quotes.get(cell_key, {}).get("quotes", [])
-        if quotes:
-            st.write(f"**{row_name} - {col_name}**")
-            for quote in quotes:
-                st.write(f"- {quote}")
+# Prepare data for HTML component
+matrix_data = {
+    "column_names": column_names,
+    "row_names": row_names,
+    "definitions": definitions,
+    "cell_quotes": cell_quotes,
+    "highlighted_cells": highlighted_cells,
+}
+
+# HTML/JavaScript component
+html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        table {{ border-collapse: collapse; width: 100%; }}
+        th, td {{ border: 1px solid #ddd; padding: 12px; text-align: left; }}
+        th {{ background: #f8f9fa; }}
+        .dimmed {{ background: #f8f9fa; color: #999; }}
+        .highlighted {{ background: #e3f2fd; border: 2px solid #2196f3 !important; }}
+        .tooltip {{
+            position: fixed;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 300px;
+            z-index: 1000;
+        }}
+    </style>
+</head>
+<body>
+    <table id="matrixTable"></table>
+
+    <script>
+        const data = {json.dumps(matrix_data, ensure_ascii=False)};
+        
+        function buildMatrix() {{
+            const table = document.getElementById('matrixTable');
+            table.innerHTML = '';
+            
+            // Create header
+            let headerRow = '<tr><th>Factors</th>' + 
+                data.column_names.map(col => `<th>${{col}}</th>`).join('') + '</tr>';
+            table.innerHTML = headerRow;
+            
+            // Create rows
+            data.row_names.forEach((rowName, rowIdx) => {{
+                let rowHtml = `<tr><td>${{rowName}}</td>`;
+                data.column_names.forEach((col, colIdx) => {{
+                    const coord = `${{rowIdx}},${{colIdx}}`;
+                    const content = data.definitions[rowName][col];
+                    const quotes = data.cell_quotes[coord]?.quotes || [];
+                    const isHighlighted = data.highlighted_cells.includes(coord);
+                    const cellClass = isHighlighted ? 'highlighted' : 'dimmed';
+                    
+                    rowHtml += `
+                        <td class="${{cellClass}}"
+                            data-quotes='${{JSON.stringify(quotes)}}'
+                            onmouseover="showTooltip(event)"
+                            onmouseout="hideTooltip()">
+                            ${{content}}
+                        </td>
+                    `;
+                }});
+                table.innerHTML += rowHtml + '</tr>';
+            }});
+        }}
+        
+        function showTooltip(event) {{
+            const quotes = JSON.parse(event.target.dataset.quotes);
+            if (!quotes.length) return;
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.innerHTML = `<ul>${{quotes.map(q => `<li>${{q}}</li>`).join('')}}</ul>`;
+            
+            document.body.appendChild(tooltip);
+            tooltip.style.left = `${{event.pageX + 15}}px`;
+            tooltip.style.top = `${{event.pageY + 15}}px`;
+        }}
+        
+        function hideTooltip() {{
+            const tooltips = document.getElementsByClassName('tooltip');
+            while(tooltips[0]) tooltips[0].remove();
+        }}
+        
+        // Initial build
+        buildMatrix();
+    </script>
+</body>
+</html>
+"""
+
+st.components.v1.html(html, height=800)
