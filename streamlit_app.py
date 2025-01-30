@@ -5,7 +5,7 @@ from jinja2 import Template
 # Load data
 @st.cache_data
 def load_data():
-    df = pd.read_excel("matrix_explained.xlsx", index_col=0)
+    df = pd.read_excel("matrix explained.xlsx", index_col=0)
     df.index = df.index.str.strip()
     df.columns = ['Processes', 'Products', 'Tools']
     return df
