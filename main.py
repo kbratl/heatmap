@@ -55,7 +55,7 @@ def index():
             <title>Matrix Visualization</title>
         </head>
         <body>
-            <h1>Matrix Visualization</h1>
+            <h1>Matrixx Visualization</h1>
             <p>Flask App is Running</p>
         </body>
         </html>""",
