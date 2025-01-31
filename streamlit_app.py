@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import json
-
+set_page_config(layout="wide")
 # Load and prepare data
 file_path = "matrix explained.xlsx"
 try:
