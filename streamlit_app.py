@@ -108,6 +108,13 @@ matrix_data = {
 }
 
 # HTML/JavaScript component with full-width matrix
+import streamlit as st
+import pandas as pd
+import json
+
+# ... [Keep all the data loading and preparation code the same] ...
+
+# HTML/JavaScript component with fixes
 html = f"""
 <!DOCTYPE html>
 <html>
@@ -132,7 +139,8 @@ html = f"""
             border: 1px solid #ddd;
             padding: 15px;
             text-align: left;
-            min-width: 100px;  /* Wider minimum column width */
+            min-width: 300px;  /* Increased column width */
+            max-width: 500px;  /* Added max-width for better text wrapping */
             white-space: normal;
             background: white;
             position: relative;
@@ -143,7 +151,7 @@ html = f"""
             left: 0;
             z-index: 3;
             background: #f8f9fa;
-            min-width: 150px;  /* Extra wide first column */
+            min-width: 350px;  /* Wider first column */
             font-size: 18px;
         }}
         td:first-child {{
@@ -167,17 +175,20 @@ html = f"""
         .highlighted {{
             background: #e3f2fd !important; 
             border: 2px solid #2196f3 !important;
+            cursor: pointer;
         }}
         .tooltip {{
             position: fixed;
             background: #fff;
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 15px;
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-width: 100px;
+            max-width: 400px;  /* Increased tooltip width */
             z-index: 1000;
             font-size: 14px;
+            white-space: normal;
+            word-wrap: break-word;
         }}
     </style>
 </head>
@@ -216,7 +227,8 @@ html = f"""
                         <td class="${{isHighlighted ? 'highlighted' : ''}}"
                             data-quotes='${{JSON.stringify(quotes)}}'
                             onmouseover="${{isHighlighted ? 'showTooltip(event)' : ''}}"
-                            onmouseout="${{isHighlighted ? 'hideTooltip()' : ''}}">
+                            onmouseout="${{isHighlighted ? 'hideTooltip()' : ''}}"
+                            onclick="${{isHighlighted ? 'toggleTooltip(event)' : ''}}">
                             <div class="cell-content">${{content}}</div>
                         </td>
                     `;
@@ -236,11 +248,18 @@ html = f"""
             
             const tooltip = document.createElement('div');
             tooltip.className = 'tooltip';
-            tooltip.innerHTML = `<ul>${{quotes.map(q => `<li>${{q}}</li>`).join('')}}</ul>`;
+            tooltip.innerHTML = `<ul>${{quotes.map(q => `<li style="margin-bottom: 8px;">${{q}}</li>`).join('')}}</ul>`;
             
             document.body.appendChild(tooltip);
             const rect = event.target.getBoundingClientRect();
-            tooltip.style.left = `${{rect.right + 5}}px`;
+            
+            // Position tooltip with boundary checks
+            let leftPosition = rect.right + 5;
+            if (leftPosition + 400 > window.innerWidth) {{
+                leftPosition = window.innerWidth - 405;
+            }}
+            
+            tooltip.style.left = `${{leftPosition}}px`;
             tooltip.style.top = `${{rect.top}}px`;
         }}
         
@@ -262,4 +281,4 @@ if st.session_state.applied_filters:
     st.info("ℹ️ Hover over highlighted cells to view corresponding quotes")
 
 # Render the component
-st.components.v1.html(html, height=9000)
+st.components.v1.html(html, height=800)
