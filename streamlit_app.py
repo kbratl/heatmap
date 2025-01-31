@@ -132,7 +132,7 @@ html = f"""
             border: 1px solid #ddd;
             padding: 15px;
             text-align: left;
-            min-width: 200px;  /* Wider minimum column width */
+            min-width: 100px;  /* Wider minimum column width */
             white-space: normal;
             background: white;
             position: relative;
@@ -143,7 +143,7 @@ html = f"""
             left: 0;
             z-index: 3;
             background: #f8f9fa;
-            min-width: 250px;  /* Extra wide first column */
+            min-width: 150px;  /* Extra wide first column */
             font-size: 18px;
         }}
         td:first-child {{
@@ -175,7 +175,7 @@ html = f"""
             padding: 10px;
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-width: 400px;
+            max-width: 100px;
             z-index: 1000;
             font-size: 14px;
         }}
