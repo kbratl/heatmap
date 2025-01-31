@@ -30,7 +30,7 @@ filters_data = {
     "Contract Types": ["Fixed Price", "Time & Material", "Cost Plus"],
     "Organisation Types": ["Contractor", "Client", "Consultant"],
     "Roles": ["Analyst", "Architect", "Consultant", "Director", 
-             "Engineer", "Manager", "President", "Vice President", "Client", "Contractor", "Consultant"],
+             "Engineer", "Manager", "President", "Vice President"],
 }
 
 # Configure cell quotes
@@ -71,20 +71,19 @@ if apply_pressed:
 
 # Calculate highlighted cells based on applied filters
 highlighted_cells = []
-displayed_quotes = {}
 if st.session_state.applied_filters:
     main_filter, subfilter = st.session_state.applied_filters
+    
     for coord, data in cell_quotes.items():
-        if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
+        if data["filters"].get(main_filter) and subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
-            displayed_quotes[coord] = data["quotes"]
 
 # Prepare data for HTML component
 matrix_data = {
     "column_names": column_names,
     "row_names": row_names,
     "definitions": definitions,
-    "cell_quotes": displayed_quotes,
+    "cell_quotes": cell_quotes,
     "highlighted_cells": highlighted_cells,
 }
 
@@ -98,12 +97,59 @@ html = f'''
         table {{ border-collapse: collapse; width: 100%; }}
         th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
         th {{ background: #f8f9fa; position: sticky; top: 0; }}
-        .highlighted {{ background: #e3f2fd !important; border: 2px solid #2196f3 !important; }}
+        .highlighted {{ background: #e3f2fd !important; border: 2px solid #2196f3 !important; cursor: pointer; }}
+        
+        /* Modal styles */
+        .modal {{
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }}
+        .modal-content {{
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+        }}
+        .close {{
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }}
+        .close:hover,
+        .close:focus {{
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }}
+        #modalQuotes p {{
+            margin: 10px 0;
+            padding: 5px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }}
     </style>
 </head>
 <body>
     <div class="matrix-wrapper">
         <table id="matrixTable"></table>
+    </div>
+    <!-- Modal Structure -->
+    <div id="quoteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalQuotes"></div>
+        </div>
     </div>
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
@@ -120,20 +166,41 @@ html = f'''
                     const coord = `${{rowIndex}},${{colIndex}}`;
                     const content = data.definitions[rowName][colName];
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = data.cell_quotes[coord] || [];
-                    rowHtml += `<td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}' onmouseover="showTooltip(event)" onmouseout="hideTooltip()">${{content}}</td>`;
+                    const quotes = data.cell_quotes[coord]?.quotes || [];
+                    rowHtml += `<td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>${{content}}</td>`;
                 }});
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
             }});
         }}
-        function showTooltip(event) {{
-            const quotes = JSON.parse(event.target.dataset.quotes);
-            if (!quotes.length) return;
-            alert(quotes.join('\n'));
-        }}
-        function hideTooltip() {{}}
         buildMatrix();
+        
+        // Modal handling
+        const modal = document.getElementById('quoteModal');
+        const modalQuotes = document.getElementById('modalQuotes');
+        const closeSpan = document.getElementsByClassName('close')[0];
+        
+        // Click handler for cells
+        document.getElementById('matrixTable').addEventListener('click', function(event) {{
+            const target = event.target;
+            if (target.tagName === 'TD' && target.classList.contains('highlighted')) {{
+                const quotes = JSON.parse(target.getAttribute('data-quotes'));
+                if (quotes && quotes.length > 0) {{
+                    modalQuotes.innerHTML = quotes.map(quote => `<p>${{quote}}</p>`).join('');
+                    modal.style.display = 'block';
+                }}
+            }}
+        }});
+        
+        // Close modal handlers
+        closeSpan.onclick = function() {{
+            modal.style.display = 'none';
+        }};
+        window.onclick = function(event) {{
+            if (event.target === modal) {{
+                modal.style.display = 'none';
+            }}
+        }};
     </script>
 </body>
 </html>'''
