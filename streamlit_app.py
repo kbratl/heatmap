@@ -185,8 +185,8 @@ html = f"""
 
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-            function adjustTableWidth() {
-        const table = document.getElementById('matrixTable');
+            function adjustTableWidth() {{
+        const table = document.getElementById('matrixTable'),
         const container = document.querySelector('.matrix-container');
         if (table && container) {
             table.style.width = '100%';
