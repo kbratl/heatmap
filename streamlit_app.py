@@ -43,7 +43,7 @@ cell_quotes = {
 }
 
 # Streamlit UI
-st.title("Flexibility Matrix Explorer")
+st.title("Flexibility Contributing Factors Matrix")
 
 # Filter selection
 col1, col2, col3 = st.columns([2, 2, 1])
@@ -82,6 +82,8 @@ if st.session_state.applied_filters:
 matrix_data = {
     "column_names": column_names,
     "row_names": row_names,
+    print(f"Number of rows: {len(row_names)}")
+    print(f"Row names: {row_names}")
     "definitions": definitions,
     "cell_quotes": cell_quotes,
     "highlighted_cells": highlighted_cells,
