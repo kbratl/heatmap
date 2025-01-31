@@ -112,64 +112,69 @@ html = f"""
 <!DOCTYPE html>
 <html>
 <head>
-    <style>
-        body {{ 
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }}
-        .matrix-wrapper {{
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: auto;
-        }}
-        .matrix-container {{
-            width: 90vw;
-            height: 85vh;
-            overflow-x: auto;
-            overflow-y: auto;
-            display: block;
-            position: relative;
-            max-width: 100vw;
-            max-height: 100vh;
-        }}
-        table {{
-            border-collapse: collapse;
-            table-layout: auto;
-            width: 100%;
-        }}
-        th, td {{
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-            white-space: nowrap;
-            min-width: 120px;
-        }}
-        th:first-child, td:first-child {{
-            position: sticky;
-            left: 0;
-            z-index: 2;
-            background: #f8f9fa;
-        }}
-        th {{
-            position: sticky;
-            top: 0;
-            z-index: 3;
-            background: #f8f9fa;
-        }}
-        .highlighted {{
-            background: #e3f2fd !important; 
-            border: 2px solid #2196f3 !important;
-        }}
-    </style>
+ <style>
+    body { 
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .matrix-wrapper {
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .matrix-container {
+        width: 95vw;  /* Adjusting to full screen */
+        max-width: 100vw;
+        height: auto;
+        overflow-x: auto;
+        overflow-y: auto;
+        display: block;
+    }
+
+    table {
+        border-collapse: collapse;
+        table-layout: auto;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    th:first-child, td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: #f8f9fa;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: #f8f9fa;
+    }
+
+    .highlighted {
+        background: #e3f2fd !important; 
+        border: 2px solid #2196f3 !important;
+    }
+</style>
+
 </head>
 <body>
     <div class="matrix-wrapper">
@@ -180,7 +185,18 @@ html = f"""
 
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-        
+            function adjustTableWidth() {
+        const table = document.getElementById('matrixTable');
+        const container = document.querySelector('.matrix-container');
+        if (table && container) {
+            table.style.width = '100%';
+            container.style.width = table.offsetWidth + 'px';
+        }
+    }
+
+    window.addEventListener('resize', adjustTableWidth);
+    window.onload = adjustTableWidth;
+
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
