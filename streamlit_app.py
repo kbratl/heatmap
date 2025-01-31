@@ -108,8 +108,7 @@ matrix_data = {
 }
 
 # HTML/JavaScript component
-html = f'''
-<!DOCTYPE html>
+html = f''' <!DOCTYPE html>
 <html>
 <head>
     <style>
@@ -255,8 +254,7 @@ html = f'''
         window.onload = adjustTableWidth;
     </script>
 </body>
-</html>
-"""
+</html>"""
 
 
 # Show disclaimer only when filters are applied
