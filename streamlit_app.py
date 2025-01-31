@@ -38,13 +38,13 @@ cell_quotes = {
     "0,0": {"quotes": ["Chocolate", "Yes we can make a dynamic heatmap matrix work :)"], "filters": {"Roles": ["Consultant"]}},
     "7,1": {"quotes": ["I do not know if there is a word limit", "An americano with an extra shot"], "filters": {"Roles": ["Consultant"]}},
     "6,1": {"quotes": ["I think deepseek R1 model is better for fixing code errors", "An americano with an extra shot"], "filters": {"Roles": ["Consultant"]}},
-    "9,2": {"quotes": ["Will we display all the quotes", "We might change the design this is just a prototype..."], "filters": {"Roles": ["Consultant"]}},
-    "4,1": {"quotes": ["Leadership should drive flexibility initiatives", "Regular review meetings with product teams"], "filters": {"Roles": ["Consultant"]}},
-    "8,2": {"quotes": ["Long-term planning supports better tool integration", "Tools should evolve with project needs"], "filters": {"Roles": ["Consultant"]}},
+    "9,2": {"quotes": ["Will we display all the quotes", "We can change the design this is just a prototype, we can make it way more aesthetically pleasing!"], "filters": {"Roles": ["Consultant"]}},
+    "4,1": {"quotes": ["I tried only for this combination so far, but it is working!!", "Dueting with a streamer while working on the code made the process way more fun"], "filters": {"Roles": ["Consultant"]}},
+    "8,2": {"quotes": ["Long-term planning supports better tool integration", "Just writing random things to see if they all display"], "filters": {"Roles": ["Consultant"]}},
 }
 
 # Streamlit UI
-st.title("Flexibility Matrix Explorer")
+st.title("Flexibility Contributing Factors Matrix")
 
 # Filter selection
 col1, col2, col3 = st.columns([2, 2, 1])
