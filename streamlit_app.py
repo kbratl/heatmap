@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
 import json
-set_page_config(layout="wide")
+
+# Set page config MUST be the first Streamlit command
+st.set_page_config(layout="wide")
+
 # Load and prepare data
 file_path = "matrix explained.xlsx"
 try:
@@ -54,7 +57,7 @@ cell_quotes = {
 }
 
 # Streamlit UI
-st.title("Flexibility Contributing Factors Heatmap Matrix")
+st.title("Flexibility Matrix Explorer")
 
 # Filter selection
 col1, col2, col3 = st.columns([2, 2, 1])
@@ -108,7 +111,8 @@ matrix_data = {
 }
 
 # HTML/JavaScript component
-html = f''' <!DOCTYPE html>
+html = f'''
+<!DOCTYPE html>
 <html>
 <head>
     <style>
@@ -130,7 +134,7 @@ html = f''' <!DOCTYPE html>
             border-collapse: collapse;
             table-layout: fixed;
             width: 100%;
-            min-width: 1000px;  /* Minimum table width */
+            min-width: 1000px;
         }}
 
         th, td {{
@@ -181,7 +185,6 @@ html = f''' <!DOCTYPE html>
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
 
-
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
@@ -216,16 +219,15 @@ html = f''' <!DOCTYPE html>
                 table.innerHTML += rowHtml;
             }});
 
-            // Adjust table width dynamically
             adjustTableWidth();
         }}
 
         function adjustTableWidth() {{
             const table = document.getElementById('matrixTable');
-            const container = document.querySelector('.matrix-container');
+            const container = document.querySelector('.matrix-wrapper');
             if (table && container) {{
                 table.style.width = '100%';
-                container.style.width = '100%'; /* Prevent overflow */
+                container.style.width = '100%';
             }}
         }}
 
@@ -255,7 +257,6 @@ html = f''' <!DOCTYPE html>
     </script>
 </body>
 </html>'''
-
 
 # Show disclaimer only when filters are applied
 if st.session_state.applied_filters:
