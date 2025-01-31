@@ -112,69 +112,68 @@ html = f"""
 <!DOCTYPE html>
 <html>
 <head>
- <style>
-    body { 
-        margin: 0;
-        padding: 0;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .matrix-wrapper {
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+    <style>
+        body {{ 
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }}
+        
+        .matrix-wrapper {{
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }}
 
-    .matrix-container {
-        width: 95vw;  /* Adjusting to full screen */
-        max-width: 100vw;
-        height: auto;
-        overflow-x: auto;
-        overflow-y: auto;
-        display: block;
-    }
+        .matrix-container {{
+            width: 95vw;
+            max-width: 100vw;
+            height: auto;
+            overflow-x: auto;
+            overflow-y: auto;
+            display: block;
+        }}
 
-    table {
-        border-collapse: collapse;
-        table-layout: auto;
-        width: 100%;
-    }
+        table {{
+            border-collapse: collapse;
+            table-layout: auto;
+            width: 100%;
+        }}
 
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-        white-space: nowrap;
-    }
+        th, td {{
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap;
+        }}
 
-    th:first-child, td:first-child {
-        position: sticky;
-        left: 0;
-        z-index: 2;
-        background: #f8f9fa;
-    }
+        th:first-child, td:first-child {{
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #f8f9fa;
+        }}
 
-    th {
-        position: sticky;
-        top: 0;
-        z-index: 3;
-        background: #f8f9fa;
-    }
+        th {{
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            background: #f8f9fa;
+        }}
 
-    .highlighted {
-        background: #e3f2fd !important; 
-        border: 2px solid #2196f3 !important;
-    }
-</style>
-
+        .highlighted {{
+            background: #e3f2fd !important; 
+            border: 2px solid #2196f3 !important;
+        }}
+    </style>
 </head>
 <body>
     <div class="matrix-wrapper">
@@ -185,17 +184,6 @@ html = f"""
 
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-            function adjustTableWidth() {{
-        const table = document.getElementById('matrixTable'),
-        const container = document.querySelector('.matrix-container');
-        if (table && container) {
-            table.style.width = '100%';
-            container.style.width = table.offsetWidth + 'px';
-        }
-    }
-
-    window.addEventListener('resize', adjustTableWidth);
-    window.onload = adjustTableWidth;
 
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
@@ -231,9 +219,17 @@ html = f"""
                 table.innerHTML += rowHtml;
             }});
 
-            // Calculate required width
+            // Adjust table width dynamically
+            adjustTableWidth();
+        }}
+
+        function adjustTableWidth() {{
+            const table = document.getElementById('matrixTable');
             const container = document.querySelector('.matrix-container');
-            container.style.width = table.offsetWidth + 'px';
+            if (table && container) {{
+                table.style.width = '100%';
+                container.style.width = table.offsetWidth + 'px';
+            }}
         }}
 
         function showTooltip(event) {{
@@ -255,9 +251,10 @@ html = f"""
             while(tooltips[0]) tooltips[0].remove();
         }}
 
-        // Initial build
+        // Initial build and dynamic resizing
         buildMatrix();
-        window.addEventListener('resize', buildMatrix);
+        window.addEventListener('resize', adjustTableWidth);
+        window.onload = adjustTableWidth;
     </script>
 </body>
 </html>
