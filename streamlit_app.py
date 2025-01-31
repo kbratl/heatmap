@@ -46,7 +46,7 @@ cell_quotes = {
 st.title("Flexibility Contributing Factors Matrix")
 
 # Filter selection
-col1, col2, col3 = st.columns([2, 2, 1,1)
+col1, col2, col3 = st.columns([2, 2, 1,1])
 with col1:
     main_filter = st.selectbox("Select Main Filter", [""] + list(filters_data.keys()), key="main_filter")
 with col2:
