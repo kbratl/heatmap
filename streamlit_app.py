@@ -54,7 +54,7 @@ cell_quotes = {
 }
 
 # Streamlit UI
-st.title("Flexibility Matrix Explorer")
+st.title("Flexibility Contributing Factors Heatmap Matrix")
 
 # Filter selection
 col1, col2, col3 = st.columns([2, 2, 1])
@@ -108,7 +108,7 @@ matrix_data = {
 }
 
 # HTML/JavaScript component
-html = f"""
+html = f'''
 <!DOCTYPE html>
 <html>
 <head>
@@ -116,43 +116,31 @@ html = f"""
         body {{ 
             margin: 0;
             padding: 0;
-            width: 100vw;
+            width: 100%;
             height: 100vh;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }}
         
         .matrix-wrapper {{
             width: 100%;
             height: 100%;
             overflow: auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }}
-
-        .matrix-container {{
-            width: 95vw;
-            max-width: 100vw;
-            height: auto;
-            overflow-x: auto;
-            overflow-y: auto;
-            display: block;
         }}
 
         table {{
             border-collapse: collapse;
-            table-layout: auto;
+            table-layout: fixed;
             width: 100%;
+            min-width: 1000px;  /* Minimum table width */
         }}
 
         th, td {{
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
-            white-space: nowrap;
+            white-space: normal !important;
+            word-wrap: break-word;
+            min-width: 150px;
         }}
 
         th:first-child, td:first-child {{
@@ -160,9 +148,7 @@ html = f"""
             left: 0;
             z-index: 2;
             background: #f8f9fa;
-            min-width: 150px; 
-             width: 25%;
-            
+            min-width: 200px;
         }}
 
         th {{
@@ -176,17 +162,26 @@ html = f"""
             background: #e3f2fd !important; 
             border: 2px solid #2196f3 !important;
         }}
+
+        .tooltip {{
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            z-index: 9999;
+            max-width: 300px;
+        }}
     </style>
 </head>
 <body>
     <div class="matrix-wrapper">
-        <div class="matrix-container">
-            <table id="matrixTable"></table>
-        </div>
+        <table id="matrixTable"></table>
     </div>
 
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
+
 
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
