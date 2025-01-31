@@ -39,14 +39,15 @@ cell_quotes = {
     "9,2": {"quotes": ["Will we display all the quotes", "We might change the design this is just a prototype..."], "filters": {"Roles": ["Consultant"]}},
     "4,1": {"quotes": ["Leadership should drive flexibility initiatives", "Regular review meetings with product teams"], "filters": {"Roles": ["Consultant"]}},
     "8,2": {"quotes": ["Long-term planning supports better tool integration", "Tools should evolve with project needs"], "filters": {"Roles": ["Consultant"]}},
-    "6,1": {"quotes": ["I think deepseek's R1 model is better for fixing code errors", "An americano with an extra shot"], "filters": {"Roles": ["Consultant"]}},
+  "6,1": {"quotes": ["I think deepseek's R1 model is better for fixing code errors", "An americano with an extra shot"],
+    "filters": {"Roles": ["Consultant"]}  # Must match "Roles" (case-sensitive)},
 }
 
 # Streamlit UI
 st.title("Flexibility Contributing Factors Matrix")
 
 # Filter selection
-col1, col2, col3 = st.columns([2, 2, 1,1])
+col1, col2, col3 = st.columns([2, 2, 1])
 with col1:
     main_filter = st.selectbox("Select Main Filter", [""] + list(filters_data.keys()), key="main_filter")
 with col2:
@@ -77,6 +78,10 @@ if st.session_state.applied_filters:
     for coord, data in cell_quotes.items():
         if data["filters"].get(main_filter) and subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
+    
+    # Debug: Print highlighted cells and filters
+    st.write("Applied Filters:", st.session_state.applied_filters)
+    st.write("Highlighted Cells:", highlighted_cells)
 
 # Prepare data for HTML component
 matrix_data = {
