@@ -263,4 +263,3 @@ if st.session_state.applied_filters:
 
 # Render the component
 st.components.v1.html(html, height=800, scrolling=True)
-
