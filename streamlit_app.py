@@ -52,7 +52,7 @@ cell_quotes = {
     "4,1": {
         "quotes": ["Leadership should drive flexibility initiatives",
                  "Regular review meetings with product teams"],
-        "filters": {"Organisation Types": ["Client"]}
+        "filters": {"Roles": ["Client"]}
     }
 }
 
@@ -97,9 +97,13 @@ if apply_pressed:
 highlighted_cells = []
 if st.session_state.applied_filters:
     main_filter, subfilter = st.session_state.applied_filters
+    st.write(f"Active Filter: {main_filter} > {subfilter}")  # Debug output
+    
     for coord, data in cell_quotes.items():
-        if data["filters"].get(main_filter) and subfilter in data["filters"][main_filter]:
-            highlighted_cells.append(coord)
+        if data["filters"].get(main_filter):
+            if subfilter in data["filters"][main_filter]:
+                highlighted_cells.append(coord)
+                st.write(f"Highlighting cell {coord}")  # Debug output
 
 # Prepare data for HTML component
 matrix_data = {
@@ -175,6 +179,10 @@ html = f'''
             z-index: 9999;
             max-width: 300px;
         }}
+        # Debug: Show matrix indices and quotes mapping
+st.write("## Debug Info")
+st.write("Row Names:", row_names)
+st.write("Cell Quotes Coordinates:", list(cell_quotes.keys()))
     </style>
 </head>
 <body>
