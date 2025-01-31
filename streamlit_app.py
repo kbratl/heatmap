@@ -132,7 +132,7 @@ html = f"""
             border: 1px solid #ddd;
             padding: 15px;
             text-align: left;
-            min-width: 400px;  /* Wider minimum column width */
+            min-width: 800px;  /* Wider minimum column width */
             white-space: normal;
             background: white;
             position: relative;
@@ -143,7 +143,7 @@ html = f"""
             left: 0;
             z-index: 3;
             background: #f8f9fa;
-            min-width: 450px;  /* Extra wide first column */
+            min-width: 850px;  /* Extra wide first column */
             font-size: 18px;
         }}
         td:first-child {{
@@ -262,4 +262,4 @@ if st.session_state.applied_filters:
     st.info("ℹ️ Hover over highlighted cells to view corresponding quotes")
 
 # Render the component
-st.components.v1.html(html, height=1200)
+st.components.v1.html(html, height=3000)
