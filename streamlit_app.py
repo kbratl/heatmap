@@ -140,7 +140,7 @@ html = f"""
             padding: 15px;
             text-align: left;
             min-width: 300px;  /* Increased column width */
-            max-width: 500px;  /* Added max-width for better text wrapping */
+            max-width: 300px;  /* Added max-width for better text wrapping */
             white-space: normal;
             background: white;
             position: relative;
@@ -281,4 +281,4 @@ if st.session_state.applied_filters:
     st.info("ℹ️ Hover over highlighted cells to view corresponding quotes")
 
 # Render the component
-st.components.v1.html(html, height=800)
+st.components.v1.html(html, height=8000)
