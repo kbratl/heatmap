@@ -124,23 +124,25 @@ html = f"""
             margin: 0;
             padding: 0;
             width: 100%;
-            min-width: fit-content;
+            height: 100%;
         }}
         .matrix-wrapper {{
             width: 100%;
-            overflow: visible;
+            height: 80vh;
+            overflow: auto;
+            position: relative;
         }}
         table {{
             border-collapse: collapse;
-            width: auto;
+            width: max-content;
             min-width: 100%;
         }}
         th, td {{
             border: 1px solid #ddd;
             padding: 15px;
             text-align: left;
-            min-width: 300px;  /* Increased column width */
-            max-width: 300px;  /* Added max-width for better text wrapping */
+            min-width: 300px;
+            max-width: 500px;
             white-space: normal;
             background: white;
             position: relative;
@@ -151,7 +153,7 @@ html = f"""
             left: 0;
             z-index: 3;
             background: #f8f9fa;
-            min-width: 350px;  /* Wider first column */
+            min-width: 350px;
             font-size: 18px;
         }}
         td:first-child {{
@@ -168,10 +170,6 @@ html = f"""
             background: #f8f9fa;
             font-size: 18px;
         }}
-        .matrix-container {{
-            width: fit-content;
-            min-width: 100%;
-        }}
         .highlighted {{
             background: #e3f2fd !important; 
             border: 2px solid #2196f3 !important;
@@ -184,7 +182,7 @@ html = f"""
             padding: 15px;
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-width: 400px;  /* Increased tooltip width */
+            max-width: 400px;
             z-index: 1000;
             font-size: 14px;
             white-space: normal;
@@ -194,9 +192,7 @@ html = f"""
 </head>
 <body>
     <div class="matrix-wrapper">
-        <div class="matrix-container">
-            <table id="matrixTable"></table>
-        </div>
+        <table id="matrixTable"></table>
     </div>
 
     <script>
@@ -227,8 +223,7 @@ html = f"""
                         <td class="${{isHighlighted ? 'highlighted' : ''}}"
                             data-quotes='${{JSON.stringify(quotes)}}'
                             onmouseover="${{isHighlighted ? 'showTooltip(event)' : ''}}"
-                            onmouseout="${{isHighlighted ? 'hideTooltip()' : ''}}"
-                            onclick="${{isHighlighted ? 'toggleTooltip(event)' : ''}}">
+                            onmouseout="${{isHighlighted ? 'hideTooltip()' : ''}}">
                             <div class="cell-content">${{content}}</div>
                         </td>
                     `;
@@ -236,10 +231,6 @@ html = f"""
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
             }});
-            
-            // Set explicit widths
-            const container = document.querySelector('.matrix-container');
-            container.style.width = table.offsetWidth + 'px';
         }}
         
         function showTooltip(event) {{
@@ -252,15 +243,17 @@ html = f"""
             
             document.body.appendChild(tooltip);
             const rect = event.target.getBoundingClientRect();
+            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             
             // Position tooltip with boundary checks
-            let leftPosition = rect.right + 5;
+            let leftPosition = rect.right + scrollLeft + 5;
             if (leftPosition + 400 > window.innerWidth) {{
-                leftPosition = window.innerWidth - 405;
+                leftPosition = window.innerWidth - 405 + scrollLeft;
             }}
             
             tooltip.style.left = `${{leftPosition}}px`;
-            tooltip.style.top = `${{rect.top}}px`;
+            tooltip.style.top = `${{rect.top + scrollTop}}px`;
         }}
         
         function hideTooltip() {{
