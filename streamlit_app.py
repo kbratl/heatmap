@@ -121,12 +121,18 @@ html = f'''
                     const content = data.definitions[rowName][colName];
                     const isHighlighted = data.highlighted_cells.includes(coord);
                     const quotes = data.cell_quotes[coord] || [];
-                    rowHtml += `<td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>${{content}}</td>`;
+                    rowHtml += `<td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}' onmouseover="showTooltip(event)" onmouseout="hideTooltip()">${{content}}</td>`;
                 }});
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
             }});
         }}
+        function showTooltip(event) {{
+            const quotes = JSON.parse(event.target.dataset.quotes);
+            if (!quotes.length) return;
+            alert(quotes.join('\n'));
+        }}
+        function hideTooltip() {{}}
         buildMatrix();
     </script>
 </body>
