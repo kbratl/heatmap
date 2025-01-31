@@ -160,6 +160,9 @@ html = f"""
             left: 0;
             z-index: 2;
             background: #f8f9fa;
+            min-width: 150px; 
+             width: 25%;
+            
         }}
 
         th {{
@@ -228,7 +231,7 @@ html = f"""
             const container = document.querySelector('.matrix-container');
             if (table && container) {{
                 table.style.width = '100%';
-                container.style.width = table.offsetWidth + 'px';
+                container.style.width = '100%'; /* Prevent overflow */
             }}
         }}
 
