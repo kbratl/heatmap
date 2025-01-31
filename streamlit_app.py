@@ -196,28 +196,28 @@ html = f"""
             // Create header row
             let headerRow = '<tr><th>Factors</th>';
             data.column_names.forEach(col => {{
-                headerRow += <th>${{col}}</th>;
+                headerRow += `<th>${{col}}</th>`;
             }});
             headerRow += '</tr>';
             table.innerHTML = headerRow;
             
             // Create data rows
             data.row_names.forEach((rowName, rowIndex) => {{
-                let rowHtml = <tr><td>${{rowName}}</td>;
+                let rowHtml = `<tr><td>${{rowName}}</td>`;
                 data.column_names.forEach((colName, colIndex) => {{
-                    const coord = ${{rowIndex}},${{colIndex}};
+                    const coord = `${{rowIndex}},${{colIndex}}`;
                     const content = data.definitions[rowName][colName];
                     const isHighlighted = data.highlighted_cells.includes(coord);
                     const quotes = data.cell_quotes[coord]?.quotes || [];
                     
-                    rowHtml += 
+                    rowHtml += `
                         <td class="${{isHighlighted ? 'highlighted' : ''}}"
                             data-quotes='${{JSON.stringify(quotes)}}'
                             onmouseover="${{isHighlighted ? 'showTooltip(event)' : ''}}"
                             onmouseout="${{isHighlighted ? 'hideTooltip()' : ''}}">
                             ${{content}}
                         </td>
-                    ;
+                    `;
                 }});
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
@@ -234,12 +234,12 @@ html = f"""
             
             const tooltip = document.createElement('div');
             tooltip.className = 'tooltip';
-            tooltip.innerHTML = <ul>${{quotes.map(q => <li>${{q}}</li>).join('')}}</ul>;
+            tooltip.innerHTML = `<ul>${{quotes.map(q => `<li>${{q}}</li>`).join('')}}</ul>`;
             
             document.body.appendChild(tooltip);
             const rect = event.target.getBoundingClientRect();
-            tooltip.style.left = ${{rect.right + 5}}px;
-            tooltip.style.top = ${{rect.top}}px;
+            tooltip.style.left = `${{rect.right + 5}}px`;
+            tooltip.style.top = `${{rect.top}}px`;
         }}
         
         function hideTooltip() {{
@@ -260,4 +260,4 @@ if st.session_state.applied_filters:
     st.info("ℹ️ Hover over highlighted cells to view corresponding quotes")
 
 # Render the component
-st.components.v1.html(html, height=2000)
+st.components.v1.html(html, height=1000)
