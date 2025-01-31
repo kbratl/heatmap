@@ -254,7 +254,7 @@ html = f''' <!DOCTYPE html>
         window.onload = adjustTableWidth;
     </script>
 </body>
-</html>"""
+</html>'''
 
 
 # Show disclaimer only when filters are applied
