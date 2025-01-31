@@ -107,6 +107,7 @@ matrix_data = {
     "highlighted_cells": highlighted_cells,
 }
 
+# HTML/JavaScript component with full-width matrix
 html = f"""
 <!DOCTYPE html>
 <html>
@@ -115,14 +116,12 @@ html = f"""
         body {{ 
             margin: 0;
             padding: 0;
-            height: 100%;
             width: 100%;
+            min-width: fit-content;
         }}
         .matrix-wrapper {{
             width: 100%;
-            height: 100%;
             overflow: visible;
-            position: relative;
         }}
         table {{
             border-collapse: collapse;
@@ -133,19 +132,18 @@ html = f"""
             border: 1px solid #ddd;
             padding: 15px;
             text-align: left;
-            min-width: 300px;  /* Wider columns */
-            max-width: 400px;
+            min-width: 400px;  /* Wider minimum column width */
             white-space: normal;
             background: white;
             position: relative;
-            font-size: 16px;  /* Larger text */
+            font-size: 16px;
         }}
         th:first-child {{
             position: sticky;
             left: 0;
             z-index: 3;
             background: #f8f9fa;
-            min-width: 350px;  /* Wider first column */
+            min-width: 450px;  /* Extra wide first column */
             font-size: 18px;
         }}
         td:first-child {{
@@ -163,9 +161,8 @@ html = f"""
             font-size: 18px;
         }}
         .matrix-container {{
-            width: 100%;
-            overflow: visible;
-            position: relative;
+            width: fit-content;
+            min-width: 100%;
         }}
         .highlighted {{
             background: #e3f2fd !important; 
@@ -178,7 +175,7 @@ html = f"""
             padding: 10px;
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-width: 300px;
+            max-width: 400px;
             z-index: 1000;
             font-size: 14px;
         }}
@@ -228,10 +225,9 @@ html = f"""
                 table.innerHTML += rowHtml;
             }});
             
-            // Auto-size columns
+            // Set explicit widths
             const container = document.querySelector('.matrix-container');
-            container.style.width = 'fit-content';
-            container.style.minWidth = '100%';
+            container.style.width = table.offsetWidth + 'px';
         }}
         
         function showTooltip(event) {{
