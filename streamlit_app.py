@@ -40,7 +40,7 @@ cell_quotes = {
     "4,1": {"quotes": ["Leadership should drive flexibility initiatives", "Regular review meetings with product teams"], "filters": {"Roles": ["Consultant"]}},
     "8,2": {"quotes": ["Long-term planning supports better tool integration", "Tools should evolve with project needs"], "filters": {"Roles": ["Consultant"]}},
   "6,1": {"quotes": ["I think deepseek's R1 model is better for fixing code errors", "An americano with an extra shot"], "filters": {"Roles": ["Consultant"]}
-}
+}}
 
 # Streamlit UI
 st.title("Flexibility Contributing Factors Matrix")
