@@ -28,9 +28,9 @@ filters_data = {
     "Phases": ["Monitoring", "Pre-Contract", "Planning", "Execution", "Delivery"],
     "Investment Types": ["Public", "Private", "PPP"],
     "Contract Types": ["Fixed Price", "Time & Material", "Cost Plus"],
-    "Organisation Types": ["Client", "Contractor", "Consultant"],
+    "Organisation Types": ["Contractor", "Client", "Consultant"],
     "Roles": ["Analyst", "Architect", "Consultant", "Director", 
-             "Engineer", "Manager", "President", "Vice President"],
+             "Engineer", "Manager", "President", "Vice President","Client", "Contractor", "Consultant"],
 }
 
 # Configure cell quotes
