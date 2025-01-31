@@ -36,10 +36,10 @@ filters_data = {
 # Configure cell quotes
 cell_quotes = {
     "0,0": {"quotes": ["Chocolate", "Yes we can make a dynamic heatmap matrix work :)"], "filters": {"Roles": ["Consultant"]}},
-    "6,1": {"quotes": ["I think deepseek's R1 model is better for fixing code errors", "An americano with an extra shot"], "filters": {"Roles": ["Consultant"]}},
     "9,2": {"quotes": ["Will we display all the quotes", "We might change the design this is just a prototype..."], "filters": {"Roles": ["Consultant"]}},
     "4,1": {"quotes": ["Leadership should drive flexibility initiatives", "Regular review meetings with product teams"], "filters": {"Roles": ["Consultant"]}},
     "8,2": {"quotes": ["Long-term planning supports better tool integration", "Tools should evolve with project needs"], "filters": {"Roles": ["Consultant"]}},
+    "6,1": {"quotes": ["I think deepseek's R1 model is better for fixing code errors", "An americano with an extra shot"], "filters": {"Roles": ["Consultant"]}},
 }
 
 # Streamlit UI
