@@ -39,7 +39,7 @@ cell_quotes = {
     "9,2": {"quotes": ["Will we display all the quotes", "We might change the design this is just a prototype..."], "filters": {"Roles": ["Consultant"]}},
     "4,1": {"quotes": ["Leadership should drive flexibility initiatives", "Regular review meetings with product teams"], "filters": {"Roles": ["Consultant"]}},
     "8,2": {"quotes": ["Long-term planning supports better tool integration", "Tools should evolve with project needs"], "filters": {"Roles": ["Consultant"]}},
-    "6,1": {"quotes": ["I think deepseek's R1 model is better for fixing code errors", "An americano with an extra shot"], "filters": {"Roles": ["Consultant"]}},
+    "5,1": {"quotes": ["I think deepseek's R1 model is better for fixing code errors", "An americano with an extra shot"], "filters": {"Roles": ["Consultant"]}},
 }
 
 # Streamlit UI
@@ -82,8 +82,6 @@ if st.session_state.applied_filters:
 matrix_data = {
     "column_names": column_names,
     "row_names": row_names,
-    print(f"Number of rows: {len(row_names)}"),
-    print(f"Row names: {row_names}"),
     "definitions": definitions,
     "cell_quotes": cell_quotes,
     "highlighted_cells": highlighted_cells,
