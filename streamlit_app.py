@@ -46,7 +46,7 @@ cell_quotes = {
     },
     "9,2": {
         "quotes": ["Will we display all the quotes",
-                 "We might change the design this is just a prototype..."],
+                 "We can change the design this is just a prototype, we can make it more aesthetically pleasing and colorful!"],
         "filters": {"Roles": ["Consultant"]}
     },
     "4,1": {
@@ -97,9 +97,11 @@ if apply_pressed:
 highlighted_cells = []
 if st.session_state.applied_filters:
     main_filter, subfilter = st.session_state.applied_filters
+    st.write(f"Applied Filters: {main_filter} -> {subfilter}")  # Debug
     for coord, data in cell_quotes.items():
         if data["filters"].get(main_filter) and subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
+            st.write(f"Highlighted Cell: {coord}")  # Debug
 
 # Prepare data for HTML component
 matrix_data = {
