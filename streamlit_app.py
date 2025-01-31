@@ -71,19 +71,20 @@ if apply_pressed:
 
 # Calculate highlighted cells based on applied filters
 highlighted_cells = []
+displayed_quotes = {}
 if st.session_state.applied_filters:
     main_filter, subfilter = st.session_state.applied_filters
-    
     for coord, data in cell_quotes.items():
-        if data["filters"].get(main_filter) and subfilter in data["filters"][main_filter]:
+        if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
+            displayed_quotes[coord] = data["quotes"]
 
 # Prepare data for HTML component
 matrix_data = {
     "column_names": column_names,
     "row_names": row_names,
     "definitions": definitions,
-    "cell_quotes": cell_quotes,
+    "cell_quotes": displayed_quotes,
     "highlighted_cells": highlighted_cells,
 }
 
@@ -119,7 +120,7 @@ html = f'''
                     const coord = `${{rowIndex}},${{colIndex}}`;
                     const content = data.definitions[rowName][colName];
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = data.cell_quotes[coord]?.quotes || [];
+                    const quotes = data.cell_quotes[coord] || [];
                     rowHtml += `<td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>${{content}}</td>`;
                 }});
                 rowHtml += '</tr>';
