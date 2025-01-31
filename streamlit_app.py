@@ -262,4 +262,4 @@ if st.session_state.applied_filters:
     st.info("ℹ️ Hover over highlighted cells to view corresponding quotes")
 
 # Render the component
-st.components.v1.html(html, height=3000)
+st.components.v1.html(html, height=9000)
