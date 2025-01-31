@@ -113,71 +113,64 @@ html = f"""
 <html>
 <head>
     <style>
-        body {{ 
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-        }}
-        .matrix-wrapper {{
-            width: 100%;
-            height: 90vh;
-            overflow: auto;
-            position: relative;
-        }}
-        table {{
-            border-collapse: collapse;
-            min-width: max-content;
-        }}
-        th, td {{
-            border: 1px solid #ddd;
-            padding: 15px;
-            text-align: left;
-            min-width: 200px;
-            max-width: 300px;
-            white-space: normal;
-            background: white;
-            position: relative;
-        }}
-        th:first-child {{
-            position: sticky;
-            left: 0;
-            z-index: 3;
-            background: #f8f9fa;
-            min-width: 250px;
-        }}
-        td:first-child {{
-            position: sticky;
-            left: 0;
-            z-index: 2;
-            background: #f8f9fa;
-        }}
-        th {{
-            position: sticky;
-            top: 0;
-            z-index: 3;
-            background: #f8f9fa;
-        }}
-        .matrix-container {{
-            width: 100%;
-            overflow: visible;
-            position: relative;
-        }}
-        .highlighted {{
-            background: #e3f2fd !important; 
-            border: 2px solid #2196f3 !important;
-        }}
-        .tooltip {{
-            position: fixed;
-            background: #fff;
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-width: 300px;
-            z-index: 1000;
-        }}
-    </style>
+    body { 
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+    .matrix-wrapper {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: auto;
+    }
+    .matrix-container {
+        width: 90vw;
+        height: 85vh;
+        overflow-x: auto;
+        overflow-y: auto;
+        display: block;
+        position: relative;
+        max-width: 100vw;
+        max-height: 100vh;
+    }
+    table {
+        border-collapse: collapse;
+        table-layout: auto;
+        width: 100%;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+        white-space: nowrap;
+        min-width: 120px;
+    }
+    th:first-child, td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: #f8f9fa;
+    }
+    th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: #f8f9fa;
+    }
+    .highlighted {
+        background: #e3f2fd !important; 
+        border: 2px solid #2196f3 !important;
+    }
+</style>
+
 </head>
 <body>
     <div class="matrix-wrapper">
@@ -260,4 +253,5 @@ if st.session_state.applied_filters:
     st.info("ℹ️ Hover over highlighted cells to view corresponding quotes")
 
 # Render the component
-st.components.v1.html(html, height=1000)
+st.components.v1.html(html, height=800, scrolling=True)
+
