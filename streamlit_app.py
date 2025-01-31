@@ -207,7 +207,7 @@ html = f'''
 </html>'''
 # Show disclaimer only when filters are applied
 if st.session_state.applied_filters:
-    st.info("ℹ️ Click on the highlighted cells to view corresponding quotes")
+    st.info("ℹ️ Please click on the highlighted cells to view the corresponding quotes")
 
 # Render the component
 st.components.v1.html(html, height=800, scrolling=True)
