@@ -107,14 +107,7 @@ matrix_data = {
     "highlighted_cells": highlighted_cells,
 }
 
-# HTML/JavaScript component with full-width matrix
-import streamlit as st
-import pandas as pd
-import json
-
-# ... [Keep all the data loading and preparation code the same] ...
-
-# HTML/JavaScript component with fixes
+# HTML/JavaScript component
 html = f"""
 <!DOCTYPE html>
 <html>
@@ -122,87 +115,97 @@ html = f"""
     <style>
         body {{ 
             margin: 0;
-            padding: 0;
+            padding: 20px;
             width: 100%;
             height: 100%;
         }}
-        .matrix-wrapper {{
+        .matrix-container {{
             width: 100%;
             height: 80vh;
             overflow: auto;
             position: relative;
+            border: 1px solid #ddd;
+            border-radius: 8px;
         }}
         table {{
             border-collapse: collapse;
-            width: max-content;
-            min-width: 100%;
+            min-width: max-content;
+            font-family: Arial, sans-serif;
         }}
         th, td {{
             border: 1px solid #ddd;
             padding: 15px;
             text-align: left;
             min-width: 300px;
-            max-width: 500px;
-            white-space: normal;
+            max-width: 400px;
             background: white;
             position: relative;
-            font-size: 16px;
+            vertical-align: top;
         }}
         th:first-child {{
             position: sticky;
             left: 0;
             z-index: 3;
             background: #f8f9fa;
-            min-width: 350px;
-            font-size: 18px;
+            min-width: 250px;
+            font-weight: bold;
         }}
         td:first-child {{
             position: sticky;
             left: 0;
             z-index: 2;
             background: #f8f9fa;
-            font-size: 16px;
+            font-weight: 500;
         }}
         th {{
             position: sticky;
             top: 0;
             z-index: 3;
             background: #f8f9fa;
-            font-size: 18px;
+            font-weight: bold;
         }}
         .highlighted {{
             background: #e3f2fd !important; 
             border: 2px solid #2196f3 !important;
             cursor: pointer;
+            transition: all 0.2s;
         }}
         .tooltip {{
-            position: fixed;
-            background: #fff;
-            border: 1px solid #ddd;
+            position: absolute;
+            background: #ffffff;
+            border: 2px solid #2196f3;
             padding: 15px;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             max-width: 400px;
             z-index: 1000;
             font-size: 14px;
-            white-space: normal;
-            word-wrap: break-word;
+            pointer-events: none;
+        }}
+        .tooltip ul {{
+            margin: 0;
+            padding-left: 20px;
+        }}
+        .tooltip li {{
+            margin-bottom: 8px;
+            line-height: 1.4;
         }}
     </style>
 </head>
 <body>
-    <div class="matrix-wrapper">
+    <div class="matrix-container">
         <table id="matrixTable"></table>
     </div>
 
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
+        let activeTooltip = null;
         
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
             
-            // Create header row
+            // Create header
             let headerRow = '<tr><th>Factors</th>';
             data.column_names.forEach(col => {{
                 headerRow += `<th>${{col}}</th>`;
@@ -210,55 +213,65 @@ html = f"""
             headerRow += '</tr>';
             table.innerHTML = headerRow;
             
-            // Create data rows
-            data.row_names.forEach((rowName, rowIndex) => {{
+            // Create rows
+            data.row_names.forEach((rowName, rowIdx) => {{
                 let rowHtml = `<tr><td>${{rowName}}</td>`;
-                data.column_names.forEach((colName, colIndex) => {{
-                    const coord = `${{rowIndex}},${{colIndex}}`;
-                    const content = data.definitions[rowName][colName];
+                data.column_names.forEach((col, colIdx) => {{
+                    const coord = `${{rowIdx}},${{colIdx}}`;
+                    const content = data.definitions[rowName][col];
                     const isHighlighted = data.highlighted_cells.includes(coord);
                     const quotes = data.cell_quotes[coord]?.quotes || [];
                     
                     rowHtml += `
                         <td class="${{isHighlighted ? 'highlighted' : ''}}"
                             data-quotes='${{JSON.stringify(quotes)}}'
-                            onmouseover="${{isHighlighted ? 'showTooltip(event)' : ''}}"
-                            onmouseout="${{isHighlighted ? 'hideTooltip()' : ''}}">
+                            onmouseover="handleHover(event)"
+                            onmouseout="handleHoverEnd(event)">
                             <div class="cell-content">${{content}}</div>
                         </td>
                     `;
                 }});
-                rowHtml += '</tr>';
-                table.innerHTML += rowHtml;
+                table.innerHTML += rowHtml + '</tr>';
             }});
         }}
         
-        function showTooltip(event) {{
+        function handleHover(event) {{
+            if (activeTooltip) activeTooltip.remove();
+            
             const quotes = JSON.parse(event.target.dataset.quotes);
             if (!quotes.length) return;
             
-            const tooltip = document.createElement('div');
-            tooltip.className = 'tooltip';
-            tooltip.innerHTML = `<ul>${{quotes.map(q => `<li style="margin-bottom: 8px;">${{q}}</li>`).join('')}}</ul>`;
+            activeTooltip = document.createElement('div');
+            activeTooltip.className = 'tooltip';
+            activeTooltip.innerHTML = `
+                <div class="tooltip-header">Related Quotes</div>
+                <ul>${{quotes.map(q => `<li>${{q}}</li>`).join('')}}</ul>
+            `;
             
-            document.body.appendChild(tooltip);
+            document.body.appendChild(activeTooltip);
+            
             const rect = event.target.getBoundingClientRect();
-            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             
-            // Position tooltip with boundary checks
-            let leftPosition = rect.right + scrollLeft + 5;
-            if (leftPosition + 400 > window.innerWidth) {{
-                leftPosition = window.innerWidth - 405 + scrollLeft;
-            }}
+            // Position tooltip
+            activeTooltip.style.left = `${{rect.left + rect.width/2}}px`;
+            activeTooltip.style.top = `${{rect.bottom + scrollTop + 5}}px`;
             
-            tooltip.style.left = `${{leftPosition}}px`;
-            tooltip.style.top = `${{rect.top + scrollTop}}px`;
+            // Keep within viewport bounds
+            const tooltipRect = activeTooltip.getBoundingClientRect();
+            if (tooltipRect.right > window.innerWidth) {{
+                activeTooltip.style.left = `${{window.innerWidth - tooltipRect.width - 10}}px`;
+            }}
+            if (tooltipRect.bottom > window.innerHeight) {{
+                activeTooltip.style.top = `${{rect.top + scrollTop - tooltipRect.height - 10}}px`;
+            }}
         }}
         
-        function hideTooltip() {{
-            const tooltips = document.getElementsByClassName('tooltip');
-            while(tooltips[0]) tooltips[0].remove();
+        function handleHoverEnd(event) {{
+            if (activeTooltip) {{
+                activeTooltip.remove();
+                activeTooltip = null;
+            }}
         }}
         
         // Initial build
@@ -274,4 +287,4 @@ if st.session_state.applied_filters:
     st.info("ℹ️ Hover over highlighted cells to view corresponding quotes")
 
 # Render the component
-st.components.v1.html(html, height=8000)
+st.components.v1.html(html, height=2000)
