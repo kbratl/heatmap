@@ -107,7 +107,6 @@ matrix_data = {
     "highlighted_cells": highlighted_cells,
 }
 
-# HTML/JavaScript component
 html = f"""
 <!DOCTYPE html>
 <html>
@@ -121,42 +120,47 @@ html = f"""
         }}
         .matrix-wrapper {{
             width: 100%;
-            height: 90vh;
-            overflow: auto;
+            height: 100%;
+            overflow: visible;
             position: relative;
         }}
         table {{
             border-collapse: collapse;
-            min-width: max-content;
+            width: auto;
+            min-width: 100%;
         }}
         th, td {{
             border: 1px solid #ddd;
             padding: 15px;
             text-align: left;
-            min-width: 200px;
-            max-width: 300px;
+            min-width: 300px;  /* Wider columns */
+            max-width: 400px;
             white-space: normal;
             background: white;
             position: relative;
+            font-size: 16px;  /* Larger text */
         }}
         th:first-child {{
             position: sticky;
             left: 0;
             z-index: 3;
             background: #f8f9fa;
-            min-width: 250px;
+            min-width: 350px;  /* Wider first column */
+            font-size: 18px;
         }}
         td:first-child {{
             position: sticky;
             left: 0;
             z-index: 2;
             background: #f8f9fa;
+            font-size: 16px;
         }}
         th {{
             position: sticky;
             top: 0;
             z-index: 3;
             background: #f8f9fa;
+            font-size: 18px;
         }}
         .matrix-container {{
             width: 100%;
@@ -176,6 +180,7 @@ html = f"""
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             max-width: 300px;
             z-index: 1000;
+            font-size: 14px;
         }}
     </style>
 </head>
@@ -215,7 +220,7 @@ html = f"""
                             data-quotes='${{JSON.stringify(quotes)}}'
                             onmouseover="${{isHighlighted ? 'showTooltip(event)' : ''}}"
                             onmouseout="${{isHighlighted ? 'hideTooltip()' : ''}}">
-                            ${{content}}
+                            <div class="cell-content">${{content}}</div>
                         </td>
                     `;
                 }});
@@ -223,9 +228,10 @@ html = f"""
                 table.innerHTML += rowHtml;
             }});
             
-            // Calculate required width
+            // Auto-size columns
             const container = document.querySelector('.matrix-container');
-            container.style.width = table.offsetWidth + 'px';
+            container.style.width = 'fit-content';
+            container.style.minWidth = '100%';
         }}
         
         function showTooltip(event) {{
@@ -260,4 +266,4 @@ if st.session_state.applied_filters:
     st.info("ℹ️ Hover over highlighted cells to view corresponding quotes")
 
 # Render the component
-st.components.v1.html(html, height=1000)
+st.components.v1.html(html, height=1200)
