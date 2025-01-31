@@ -113,33 +113,25 @@ html = f"""
 <html>
 <head>
     <style>
-        * {{
-            box-sizing: border-box;
+        body {{ 
             margin: 0;
-            padding: 0;
-        }}
-        
-        .matrix-wrapper {{
+            padding: 20px;
             width: 100%;
-            height: calc(100vh - 150px);
-            overflow: hidden;
+            height: 100%;
+        }}
+        .matrix-container {{
+            width: 100%;
+            height: 80vh;
+            overflow: auto;
             position: relative;
             border: 1px solid #ddd;
             border-radius: 8px;
         }}
-        
-        .matrix-scroll {{
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-        }}
-        
         table {{
             border-collapse: collapse;
             min-width: max-content;
             font-family: Arial, sans-serif;
         }}
-        
         th, td {{
             border: 1px solid #ddd;
             padding: 15px;
@@ -150,7 +142,6 @@ html = f"""
             position: relative;
             vertical-align: top;
         }}
-        
         th:first-child {{
             position: sticky;
             left: 0;
@@ -159,7 +150,6 @@ html = f"""
             min-width: 250px;
             font-weight: bold;
         }}
-        
         td:first-child {{
             position: sticky;
             left: 0;
@@ -167,7 +157,6 @@ html = f"""
             background: #f8f9fa;
             font-weight: 500;
         }}
-        
         th {{
             position: sticky;
             top: 0;
@@ -175,51 +164,119 @@ html = f"""
             background: #f8f9fa;
             font-weight: bold;
         }}
-        
-        /* Hide scrollbars but keep functionality */
-        .matrix-scroll::-webkit-scrollbar {{
-            width: 0 !important;
-            height: 0 !important;
-        }}
-        
         .highlighted {{
             background: #e3f2fd !important; 
             border: 2px solid #2196f3 !important;
             cursor: pointer;
+            transition: all 0.2s;
         }}
-        
         .tooltip {{
-            /* Keep previous tooltip styles */
+            position: absolute;
+            background: #ffffff;
+            border: 2px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 400px;
+            z-index: 1000;
+            font-size: 14px;
+            pointer-events: none;
+        }}
+        .tooltip ul {{
+            margin: 0;
+            padding-left: 20px;
+        }}
+        .tooltip li {{
+            margin-bottom: 8px;
+            line-height: 1.4;
         }}
     </style>
 </head>
 <body>
-    <div class="matrix-wrapper">
-        <div class="matrix-scroll">
-            <table id="matrixTable"></table>
-        </div>
+    <div class="matrix-container">
+        <table id="matrixTable"></table>
     </div>
 
     <script>
-        // Keep previous JavaScript code but add:
-        function adjustLayout() {{
-            const container = document.querySelector('.matrix-wrapper');
+        const data = {json.dumps(matrix_data, ensure_ascii=False)};
+        let activeTooltip = null;
+        
+        function buildMatrix() {{
             const table = document.getElementById('matrixTable');
+            table.innerHTML = '';
             
-            // Auto-adjust container height
-            container.style.height = `calc(100vh - 150px)`;
+            // Create header
+            let headerRow = '<tr><th>Factors</th>';
+            data.column_names.forEach(col => {{
+                headerRow += `<th>${{col}}</th>`;
+            }});
+            headerRow += '</tr>';
+            table.innerHTML = headerRow;
             
-            // Ensure table fills available space
-            table.style.minWidth = `100%`;
+            // Create rows
+            data.row_names.forEach((rowName, rowIdx) => {{
+                let rowHtml = `<tr><td>${{rowName}}</td>`;
+                data.column_names.forEach((col, colIdx) => {{
+                    const coord = `${{rowIdx}},${{colIdx}}`;
+                    const content = data.definitions[rowName][col];
+                    const isHighlighted = data.highlighted_cells.includes(coord);
+                    const quotes = data.cell_quotes[coord]?.quotes || [];
+                    
+                    rowHtml += `
+                        <td class="${{isHighlighted ? 'highlighted' : ''}}"
+                            data-quotes='${{JSON.stringify(quotes)}}'
+                            onmouseover="handleHover(event)"
+                            onmouseout="handleHoverEnd(event)">
+                            <div class="cell-content">${{content}}</div>
+                        </td>
+                    `;
+                }});
+                table.innerHTML += rowHtml + '</tr>';
+            }});
         }}
         
-        // Call adjustLayout after buildMatrix
+        function handleHover(event) {{
+            if (activeTooltip) activeTooltip.remove();
+            
+            const quotes = JSON.parse(event.target.dataset.quotes);
+            if (!quotes.length) return;
+            
+            activeTooltip = document.createElement('div');
+            activeTooltip.className = 'tooltip';
+            activeTooltip.innerHTML = `
+                <div class="tooltip-header">Related Quotes</div>
+                <ul>${{quotes.map(q => `<li>${{q}}</li>`).join('')}}</ul>
+            `;
+            
+            document.body.appendChild(activeTooltip);
+            
+            const rect = event.target.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Position tooltip
+            activeTooltip.style.left = `${{rect.left + rect.width/2}}px`;
+            activeTooltip.style.top = `${{rect.bottom + scrollTop + 5}}px`;
+            
+            // Keep within viewport bounds
+            const tooltipRect = activeTooltip.getBoundingClientRect();
+            if (tooltipRect.right > window.innerWidth) {{
+                activeTooltip.style.left = `${{window.innerWidth - tooltipRect.width - 10}}px`;
+            }}
+            if (tooltipRect.bottom > window.innerHeight) {{
+                activeTooltip.style.top = `${{rect.top + scrollTop - tooltipRect.height - 10}}px`;
+            }}
+        }}
+        
+        function handleHoverEnd(event) {{
+            if (activeTooltip) {{
+                activeTooltip.remove();
+                activeTooltip = null;
+            }}
+        }}
+        
+        // Initial build
         buildMatrix();
-        adjustLayout();
-        window.addEventListener('resize', () => {{
-            buildMatrix();
-            adjustLayout();
-        }});
+        window.addEventListener('resize', buildMatrix);
     </script>
 </body>
 </html>
@@ -230,4 +287,4 @@ if st.session_state.applied_filters:
     st.info("ℹ️ Hover over highlighted cells to view corresponding quotes")
 
 # Render the component
-st.components.v1.html(html, height=2000)
+st.components.v1.html(html, height=800)
