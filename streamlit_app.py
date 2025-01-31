@@ -82,8 +82,8 @@ if st.session_state.applied_filters:
 matrix_data = {
     "column_names": column_names,
     "row_names": row_names,
-    print(f"Number of rows: {len(row_names)}")
-    print(f"Row names: {row_names}")
+    print(f"Number of rows: {len(row_names)}"),
+    print(f"Row names: {row_names}"),
     "definitions": definitions,
     "cell_quotes": cell_quotes,
     "highlighted_cells": highlighted_cells,
