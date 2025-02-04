@@ -210,4 +210,4 @@ if st.session_state.applied_filters:
     st.info("ℹ️ Please click on the highlighted cells to view the corresponding quotes")
 
 # Render the component
-st.components.v1.html(html, height=800, scrolling=True)
+st.components.v1.html(html, height=800)
