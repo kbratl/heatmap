@@ -1,0 +1,5 @@
+source /home/adminuser/venv/bin/activate
+pip install matplotlib
+
+# If using system-wide Python
+pip install matplotlib --user
