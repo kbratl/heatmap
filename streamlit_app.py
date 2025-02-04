@@ -2,26 +2,8 @@ import streamlit as st
 import pandas as pd
 import json
 
-# Set page config MUST be the first Streamlit command
+# Set page config
 st.set_page_config(layout="wide")
-
-# Load and prepare data
-file_path = "matrix explained.xlsx"
-try:
-    df = pd.read_excel(file_path, index_col=0)
-    df.index = df.index.str.strip()
-    df.columns = ['Processes', 'Products', 'Tools']
-    row_names = df.index.tolist()
-    column_names = df.columns.tolist()
-except Exception as e:
-    st.error(f"Error loading Excel file: {e}")
-    st.stop()
-
-# Build definitions dictionary
-definitions = {
-    row: {col: str(df.at[row, col]) for col in column_names}
-    for row in row_names
-}
 
 # Configure filters
 filters_data = {
@@ -79,16 +61,27 @@ if st.session_state.applied_filters:
         if data["filters"].get(main_filter) and subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
 
+# Matrix configuration
+row_names = [
+    "Pre-Contract Motivations", "Post-Contract Motivations", "Questioning Competence",
+    "Modeling and Comparing Competence", "Interpretation Competence",
+    "Degree of Control in Management Practices", "Leadership Commitment to Being Flexible",
+    "Experimentation and Learning", "Defining Flexibility Related Project Objectives",
+    "Long-term Perspective", "Buffers", "Slack", "Supplier-Buyer Cooperation",
+    "Multidisciplinary Coordination", "Flexibility as Threat vs Opportunity",
+    "Immediate Profit vs Sustained Success"
+]
+column_names = ['Processes', 'Products', 'Tools']
+
 # Prepare data for HTML component
 matrix_data = {
     "column_names": column_names,
     "row_names": row_names,
-    "definitions": definitions,
-    "cell_quotes": cell_quotes,
     "highlighted_cells": highlighted_cells,
+    "cell_quotes": cell_quotes
 }
 
-# HTML/JavaScript component
+# HTML/JavaScript component with heatmap
 html = f'''
 <!DOCTYPE html>
 <html>
@@ -96,48 +89,29 @@ html = f'''
     <style>
         .matrix-wrapper {{ overflow: auto; }}
         table {{ border-collapse: collapse; width: 100%; }}
-        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: center; }}
         th {{ background: #f8f9fa; position: sticky; top: 0; }}
-        .highlighted {{ background: #e3f2fd !important; border: 2px solid #2196f3 !important; cursor: pointer; }}
+        .highlighted {{ border: 2px solid #2196f3 !important; cursor: pointer; }}
         
-        /* Modal styles */
-        .modal {{
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
+        /* Heatmap styling */
+        .heatmap-cell {{ 
+            font-weight: bold;
+            color: black;
+            position: relative;
+            min-width: 100px;
+        }}
+        .color-overlay {{
+            position: absolute;
             top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+            opacity: 0.3;
+            z-index: 1;
         }}
-        .modal-content {{
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
+        .percentage {{
             position: relative;
-        }}
-        .close {{
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }}
-        .close:hover,
-        .close:focus {{
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }}
-        #modalQuotes p {{
-            margin: 10px 0;
-            padding: 5px;
-            background: #f8f9fa;
-            border-radius: 4px;
+            z-index: 2;
         }}
     </style>
 </head>
@@ -145,6 +119,7 @@ html = f'''
     <div class="matrix-wrapper">
         <table id="matrixTable"></table>
     </div>
+    
     <!-- Modal Structure -->
     <div id="quoteModal" class="modal">
         <div class="modal-content">
@@ -152,39 +127,81 @@ html = f'''
             <div id="modalQuotes"></div>
         </div>
     </div>
+    
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
+        
+        function getColor(value) {{
+            // Red (high) to Green (low) scale
+            if (value >= 50) return '#8b0000';  // Dark red
+            if (value >= 40) return '#ff0000';  // Bright red
+            if (value >= 30) return '#ff4500';  // Orange-red
+            if (value >= 20) return '#ffa500';  // Orange
+            if (value >= 10) return '#ffd700';  // Yellow
+            return '#008000';  // Green
+        }}
+
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
+            
+            // Create header
             let headerRow = '<tr><th>Factors</th>';
             data.column_names.forEach(col => {{ headerRow += `<th>${{col}}</th>`; }});
             headerRow += '</tr>';
             table.innerHTML = headerRow;
-            data.row_names.forEach((rowName, rowIndex) => {{
-                let rowHtml = `<tr><td>${{rowName}}</td>`;
-                data.column_names.forEach((colName, colIndex) => {{
+
+            // Percentage data
+            const percentages = {{
+                "Pre-Contract Motivations": {{"Processes": 16, "Products": 8, "Tools": 13}},
+                "Post-Contract Motivations": {{"Processes": 50, "Products": 11, "Tools": 6}},
+                "Questioning Competence": {{"Processes": 23, "Products": 13, "Tools": 6}},
+                "Modeling and Comparing Competence": {{"Processes": 25, "Products": 6, "Tools": 27}},
+                "Interpretation Competence": {{"Processes": 27, "Products": 9, "Tools": 8}},
+                "Degree of Control in Management Practices": {{"Processes": 33, "Products": 8, "Tools": 9}},
+                "Leadership Commitment to Being Flexible": {{"Processes": 42, "Products": 13, "Tools": 13}},
+                "Experimentation and Learning": {{"Processes": 9, "Products": 14, "Tools": 13}},
+                "Defining Flexibility Related Project Objectives": {{"Processes": 19, "Products": 8, "Tools": 8}},
+                "Long-term Perspective": {{"Processes": 13, "Products": 11, "Tools": 9}},
+                "Buffers": {{"Processes": 25, "Products": 5, "Tools": 6}},
+                "Slack": {{"Processes": 11, "Products": 9, "Tools": 5}},
+                "Supplier-Buyer Cooperation": {{"Processes": 25, "Products": 19, "Tools": 13}},
+                "Multidisciplinary Coordination": {{"Processes": 55, "Products": 11, "Tools": 20}},
+                "Flexibility as Threat vs Opportunity": {{"Processes": 25, "Products": 11, "Tools": 11}},
+                "Immediate Profit vs Sustained Success": {{"Processes": 20, "Products": 14, "Tools": 5}}
+            }};
+
+            // Create rows
+            data.row_names.forEach(rowName => {{
+                let rowHtml = `<tr><td><strong>${{rowName}}</strong></td>`;
+                data.column_names.forEach(colName => {{
+                    const value = percentages[rowName][colName];
+                    const color = getColor(value);
+                    const rowIndex = data.row_names.indexOf(rowName);
+                    const colIndex = data.column_names.indexOf(colName);
                     const coord = `${{rowIndex}},${{colIndex}}`;
-                    const content = data.definitions[rowName][colName];
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = data.cell_quotes[coord]?.quotes || [];
-                    rowHtml += `<td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>${{content}}</td>`;
+                    
+                    rowHtml += `
+                        <td class="${{isHighlighted ? 'highlighted' : ''}} heatmap-cell" 
+                            data-quotes='${{JSON.stringify(data.cell_quotes[coord]?.quotes || [])}}'>
+                            <div class="color-overlay" style="background-color: ${{color}}"></div>
+                            <div class="percentage">${{value}}%</div>
+                        </td>`;
                 }});
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
             }});
         }}
-        buildMatrix();
-        
+
         // Modal handling
         const modal = document.getElementById('quoteModal');
         const modalQuotes = document.getElementById('modalQuotes');
         const closeSpan = document.getElementsByClassName('close')[0];
         
-        // Click handler for cells
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
-            const target = event.target;
-            if (target.tagName === 'TD' && target.classList.contains('highlighted')) {{
+            const target = event.target.closest('td');
+            if (target && target.classList.contains('highlighted')) {{
                 const quotes = JSON.parse(target.getAttribute('data-quotes'));
                 if (quotes && quotes.length > 0) {{
                     modalQuotes.innerHTML = quotes.map(quote => `<p>${{quote}}</p>`).join('');
@@ -193,21 +210,40 @@ html = f'''
             }}
         }});
         
-        // Close modal handlers
-        closeSpan.onclick = function() {{
-            modal.style.display = 'none';
-        }};
-        window.onclick = function(event) {{
-            if (event.target === modal) {{
-                modal.style.display = 'none';
-            }}
-        }};
+        closeSpan.onclick = function() {{ modal.style.display = 'none'; }};
+        window.onclick = function(event) {{ if (event.target === modal) modal.style.display = 'none'; }};
+
+        buildMatrix();
     </script>
 </body>
-</html>'''
-# Show disclaimer only when filters are applied
+</html>
+'''
+
+# Show disclaimer
 if st.session_state.applied_filters:
     st.info("ℹ️ Please click on the highlighted cells to view the corresponding quotes")
+
+# Definitions section
+st.subheader("Definitions")
+definitions = """
+**Pre-Contract Motivations**: [Add your definition here]
+**Post-Contract Motivations**: [Add your definition here]
+**Questioning Competence**: [Add your definition here]
+**Modeling and Comparing Competence**: [Add your definition here]
+**Interpretation Competence**: [Add your definition here]
+**Degree of Control in Management Practices**: [Add your definition here]
+**Leadership Commitment to Being Flexible**: [Add your definition here]
+**Experimentation and Learning**: [Add your definition here]
+**Defining Flexibility Related Project Objectives**: [Add your definition here]
+**Long-term Perspective**: [Add your definition here]
+**Buffers**: [Add your definition here]
+**Slack**: [Add your definition here]
+**Supplier-Buyer Cooperation**: [Add your definition here]
+**Multidisciplinary Coordination**: [Add your definition here]
+**Flexibility as Threat vs Opportunity**: [Add your definition here]
+**Immediate Profit vs Sustained Success**: [Add your definition here]
+"""
+st.markdown(definitions)
 
 # Render the component
 st.components.v1.html(html, height=800, scrolling=True)
