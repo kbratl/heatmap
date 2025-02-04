@@ -1,6 +1,1 @@
-source /home/adminuser/venv/bin/activate
-pip install matplotlib
 
-# If using system-wide Python
-pip install matplotlib --user
-matplotlib==3.8.4  # or latest version
