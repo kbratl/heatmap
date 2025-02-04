@@ -148,11 +148,44 @@ html = f'''
             opacity: 0.3;
             z-index: 1;
         }}
-        
-        /* Ensure table visibility */
-        table, th, td {{
-            visibility: visible !important;
-            border: 1px solid #ddd !important;
+   /* Modal styles */
+        .modal {{
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }}
+        .modal-content {{
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+        }}
+        .close {{
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }}
+        .close:hover,
+        .close:focus {{
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }}
+        #modalQuotes p {{
+            margin: 10px 0;
+            padding: 5px;
+            background: #f8f9fa;
+            border-radius: 4px;
         }}
     </style>
 </head>
