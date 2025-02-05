@@ -248,16 +248,20 @@ html = f'''
         const closeSpan = document.getElementsByClassName('close')[0];
         
         // Click handler for cells
-        document.getElementById('matrixTable').addEventListener('click', function(event) {
-    const target = event.target.closest('td'); // Ensure we get the nearest TD cell
-    if (target && target.classList.contains('highlighted')) {
-        const quotes = JSON.parse(target.getAttribute('data-quotes') || "[]");
+      document.getElementById('matrixTable').addEventListener('click', function(event) {
+    // Ensure we always get the <td> element, even if clicking on a child element inside it
+    let target = event.target.closest("td"); 
+
+    if (target && target.classList.contains("highlighted")) {
+        const quotes = JSON.parse(target.getAttribute("data-quotes") || "[]");
+
         if (quotes.length > 0) {
-            modalQuotes.innerHTML = quotes.map(quote => `<p>${quote}</p>`).join('');
-            modal.style.display = 'block';
+            modalQuotes.innerHTML = quotes.map(quote => `<p>${quote}</p>`).join("");
+            modal.style.display = "block";
         }
     }
 });
+
 
         
         // Close modal handlers
