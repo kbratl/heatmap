@@ -208,7 +208,7 @@ html = f'''
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
         function getHeatmapClass(percentage) {{
             if (percentage <= 20) return 'heatmap-low';
-            if (percentage <= 50) return 'heatmap-medium';
+            if (percentage <= 40) return 'heatmap-medium';
             return 'heatmap-high';
         }}
         function buildMatrix() {{
@@ -229,9 +229,9 @@ html = f'''
                     const isHighlighted = data.highlighted_cells.includes(coord);
                     const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes) ? data.cell_quotes[coord].quotes : [];
                     rowHtml += `
-                        <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
+                        <td class="${{isHighlighted ? 'highlighted' : ''}} ${{heatmapClass}}" data-quotes='${{JSON.stringify(quotes)}}'>
                             <div class="cell-content">
-                                <div class="percentage ${{heatmapClass}}">${{percentage}}</div>
+                                <div class="percentage">${{isHighlighted ? percentage : ''}}</div>
                                 <div class="explanation">${{explanation}}</div>
                             </div>
                         </td>`;
