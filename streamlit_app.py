@@ -19,16 +19,16 @@ except Exception as e:
 
 # Add percentages to the DataFrame
 percentages = {
-    "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
+    "Pre-Contract Motivations": {"Processes": 32, "Products": 8, "Tools": 13},
     "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},
     "Questioning Competence": {"Processes": 23, "Products": 13, "Tools": 6},
     "Modeling and comparing competence": {"Processes": 25, "Products": 6, "Tools": 27},
-    "Interpretation Competence": {"Processes": 27, "Products": 9, "Tools": 8},
+    "Interpretation Competence": {"Processes": 27, "Products": 5, "Tools": 8},
     "Degree of Control in Management Practices": {"Processes": 33, "Products": 8, "Tools": 9},
-    "Leadership commitment to being flexible": {"Processes": 42, "Products": 13, "Tools": 13},
-    "Experimentation and learning": {"Processes": 9, "Products": 14, "Tools": 13},
-    "Defining Flexibility Related Project Objectives": {"Processes": 19, "Products": 8, "Tools": 8},
-    "Long-term Perspective": {"Processes": 13, "Products": 11, "Tools": 9},
+    "Leadership commitment to being flexible": {"Processes": 42, "Products": 10, "Tools": 13},
+    "Experimentation and learning": {"Processes": 9, "Products": 12, "Tools": 13},
+    "Defining Flexibility Related Project Objectives": {"Processes": 19, "Products": 8, "Tools": 25},
+    "Long-term Perspective": {"Processes": 13, "Products": 11, "Tools": 16},
     "Buffers": {"Processes": 25, "Products": 5, "Tools": 6},
     "Slacks": {"Processes": 11, "Products": 9, "Tools": 0},
     "Supplier-Buyer Cooperation": {"Processes": 25, "Products": 19, "Tools": 13},
@@ -111,8 +111,6 @@ if st.session_state.applied_filters:
         if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
             filtered_quotes[coord] = data  # Store filtered quotes correctly
-
-
 
 # Prepare data for HTML component
 matrix_data = {
@@ -209,7 +207,7 @@ html = f'''
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
         function getHeatmapClass(percentage) {{
             if (percentage <= 20) return 'heatmap-low';
-            if (percentage <= 40) return 'heatmap-medium';
+            if (percentage <= 50) return 'heatmap-medium';
             return 'heatmap-high';
         }}
         function buildMatrix() {{
