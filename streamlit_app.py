@@ -257,7 +257,7 @@ html = f'''
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
             const target = event.target;
           if (target.tagName === 'TD' && target.hasAttribute('data-quotes')) {
-              const quotes = JSON.parse(target.getAttribute('data-quotes') || "[]");
+              const quotes = JSON.parse(target.getAttribute('data-quotes') || '[]');
 
 
                 if (quotes && quotes.length > 0) {{
