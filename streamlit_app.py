@@ -158,17 +158,17 @@ html = f'''
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
             let headerRow = '<tr><th>Factors</th>';
-            data.column_names.forEach(col => {{ headerRow += <th>${{col}}</th>; }});
+            data.column_names.forEach(col => {{ headerRow += `<th>${{col}}</th>`; }});
             headerRow += '</tr>';
             table.innerHTML = headerRow;
             data.row_names.forEach((rowName, rowIndex) => {{
-                let rowHtml = <tr><td>${{rowName}}</td>;
+                let rowHtml = `<tr><td>${{rowName}}</td>`;
                 data.column_names.forEach((colName, colIndex) => {{
-                    const coord = ${{rowIndex}},${{colIndex}};
+                    const coord = `${{rowIndex}},${{colIndex}}`;
                     const content = data.definitions[rowName][colName];
                     const isHighlighted = data.highlighted_cells.includes(coord);
                     const quotes = data.cell_quotes[coord]?.quotes || [];
-                    rowHtml += <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>${{content}}</td>;
+                    rowHtml += `<td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>${{content}}</td>`;
                 }});
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
@@ -187,7 +187,7 @@ html = f'''
             if (target.tagName === 'TD' && target.classList.contains('highlighted')) {{
                 const quotes = JSON.parse(target.getAttribute('data-quotes'));
                 if (quotes && quotes.length > 0) {{
-                    modalQuotes.innerHTML = quotes.map(quote => <p>${{quote}}</p>).join('');
+                    modalQuotes.innerHTML = quotes.map(quote => `<p>${{quote}}</p>`).join('');
                     modal.style.display = 'block';
                 }}
             }}
@@ -211,5 +211,3 @@ if st.session_state.applied_filters:
 
 # Render the component
 st.components.v1.html(html, height=800, scrolling=True)
-
-
