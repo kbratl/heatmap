@@ -104,20 +104,17 @@ if apply_pressed:
 # Calculate highlighted cells based on applied filters
 filtered_quotes = {}
 highlighted_cells = []
-
-# Always include all quotes, not just when filters are applied
-for coord, data in cell_quotes.items():
-    if not st.session_state.applied_filters:
-        # No filter applied, include all quotes
-        highlighted_cells.append(coord)
-        filtered_quotes[coord] = data
-    else:
-        # Apply filtering logic
-        main_filter, subfilter = st.session_state.applied_filters
+if st.session_state.applied_filters:
+    main_filter, subfilter = st.session_state.applied_filters
+    
+    for coord, data in cell_quotes.items():
         if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
-            filtered_quotes[coord] = data
+            filtered_quotes[coord] = data  # Store filtered quotes correctly
 
+# Debugging: Print highlighted cells and filtered quotes
+st.write("Highlighted Cells:", highlighted_cells)
+st.write("Filtered Quotes:", filtered_quotes)
 
 # Prepare data for HTML component
 matrix_data = {
@@ -232,8 +229,7 @@ html = f'''
                     const percentValue = parseFloat(percentage);
                     const heatmapClass = getHeatmapClass(percentValue);
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = data.cell_quotes.hasOwnProperty(coord) ? data.cell_quotes[coord].quotes : [];
-                    console.log("Quotes for", coord, ":", quotes);
+                    const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes) ? data.cell_quotes[coord].quotes : [];
                     rowHtml += `
                         <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
                             <div class="cell-content">
@@ -256,11 +252,8 @@ html = f'''
         // Click handler for cells
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
             const target = event.target;
-          if (target.tagName === 'TD' && target.hasAttribute('data-quotes')) {{
-              const quotes = JSON.parse(target.getAttribute('data-quotes') || '[]');
-              }}
-
-
+            if (target.tagName === 'TD' && target.classList.contains('highlighted')) {{
+                const quotes = JSON.parse(target.getAttribute('data-quotes'));
                 if (quotes && quotes.length > 0) {{
                     modalQuotes.innerHTML = quotes.map(quote => `<p>${{quote}}</p>`).join('');
                     modal.style.display = 'block';
