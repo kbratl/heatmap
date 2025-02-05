@@ -11,6 +11,18 @@ try:
     df = pd.read_excel(file_path, index_col=0)
     df.index = df.index.str.strip()
     df.columns = ['Processes', 'Products', 'Tools']
+    # Check for missing percentage rows
+missing_percentage_rows = [row for row in percentages.keys() if row not in row_names]
+if missing_percentage_rows:
+    st.error(f"Missing rows in Excel: {missing_percentage_rows}")
+    st.stop()
+
+# Check for valid columns
+required_columns = ['Processes', 'Products', 'Tools']
+missing_columns = [col for col in required_columns if col not in df.columns]
+if missing_columns:
+    st.error(f"Missing required columns: {missing_columns}")
+    st.stop()
     row_names = df.index.tolist()
     column_names = df.columns.tolist()
 except Exception as e:
