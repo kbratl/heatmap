@@ -132,12 +132,12 @@ if st.session_state.applied_filters:
             if row in current_percentages:
                 current_percentages[row].update(cols)
     
-    # Filter quotes
-for coord, data in cell_quotes.items():
-    if main_filter in data["filters"]:
-        if subfilter in data["filters"][main_filter]:
-            highlighted_cells.append(coord)
-            filtered_quotes[coord] = data["quotes"]  # Store only quotes array
+    # FIXED INDENTATION: Filter quotes INSIDE applied_filters block
+    for coord, data in cell_quotes.items():
+        if main_filter in data["filters"]:
+            if subfilter in data["filters"][main_filter]:
+                highlighted_cells.append(coord)
+                filtered_quotes[coord] = data["quotes"]
 
 # Rebuild DataFrame with current data
 df = pd.DataFrame(index=row_names, columns=column_names)
@@ -242,7 +242,6 @@ html = f'''
 
 if st.session_state.applied_filters:
     st.info("ℹ️ Please click on the highlighted cells to view the corresponding quotes")
-
-st.components.v1.html(html, height=800, scrolling=True)
+    
 # Render the component
 st.components.v1.html(html, height=800, scrolling=True)
