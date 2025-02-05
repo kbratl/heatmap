@@ -237,8 +237,7 @@ html = f'''
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
         function getHeatmapColor(percentage) {{
-function getHeatmapColor(percentage) {
-    let hue;
+        let hue;
     if (percentage < 50) {
         // Green to Yellow transition (low to medium)
         hue = 120 - (percentage * 2.4);
