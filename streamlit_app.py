@@ -17,8 +17,8 @@ except Exception as e:
     st.error(f"Error loading Excel file: {e}")
     st.stop()
 
-# Base percentages
-base_percentages = {
+# Add percentages to the DataFrame
+percentages = {
     "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
     "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},
     "Questioning Competence": {"Processes": 23, "Products": 13, "Tools": 6},
@@ -37,14 +37,21 @@ base_percentages = {
     "Immediate Profit vs Sustained Success": {"Processes": 20, "Products": 14, "Tools": 5},
 }
 
-# Dynamic percentages for rolesXconsultant combo
-dynamic_percentages = {
-    "Pre-Contract Motivations": {"Processes": 32, "Products": 0, "Tools": 0},
-    "Interpretation Competence": {"Processes": 0, "Products": 5, "Tools": 0},
-    "Leadership commitment to being flexible": {"Processes": 0, "Products": 10, "Tools": 0},
-    "Experimentation and learning": {"Processes": 0, "Products": 12, "Tools": 0},
-    "Defining Flexibility Related Project Objectives": {"Processes": 0, "Products": 0, "Tools": 25},
-    "Long-term Perspective": {"Processes": 0, "Products": 0, "Tools": 16},
+# Validate that all rows in percentages exist in the DataFrame
+missing_percentage_rows = [row for row in percentages.keys() if row not in row_names]
+if missing_percentage_rows:
+    st.error(f"Error: The following rows in the 'percentages' dictionary do not exist in the Excel file: {missing_percentage_rows}")
+    st.stop()
+
+# Add percentages to the DataFrame
+for row, cols in percentages.items():
+    for col, percent in cols.items():
+        df.at[row, col] = f"{percent}%|{df.at[row, col]}"
+
+# Build definitions dictionary
+definitions = {
+    row: {col: str(df.at[row, col]) for col in column_names}
+    for row in row_names
 }
 
 # Configure filters
@@ -94,33 +101,26 @@ if apply_pressed:
         st.warning("Please select both a main filter and subfilter before applying")
         st.session_state.applied_filters = None
 
-# Use dynamic percentages if the filter is rolesXconsultant
-if st.session_state.applied_filters == ("Roles", "Consultant"):
-    percentages = dynamic_percentages
-else:
-    percentages = base_percentages
-
-# Add percentages to the DataFrame
-for row, cols in percentages.items():
-    for col, percent in cols.items():
-        df.at[row, col] = f"{percent}%|{df.at[row, col]}"
-
 # Calculate highlighted cells based on applied filters
-highlighted_cells = []
 filtered_quotes = {}
+highlighted_cells = []
 if st.session_state.applied_filters:
+    main_filter, subfilter = st.session_state.applied_filters
+    
     for coord, data in cell_quotes.items():
-        if st.session_state.applied_filters[0] in data["filters"] and st.session_state.applied_filters[1] in data["filters"][st.session_state.applied_filters[0]]:
+        if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
-            filtered_quotes[coord] = data["quotes"]
+            filtered_quotes[coord] = data  # Store filtered quotes correctly
+
+
 
 # Prepare data for HTML component
 matrix_data = {
     "column_names": column_names,
     "row_names": row_names,
-    "definitions": {row: {col: str(df.at[row, col]) for col in column_names} for row in row_names},
+    "definitions": definitions,
+    "cell_quotes": filtered_quotes,  # Pass only relevant quotes
     "highlighted_cells": highlighted_cells,
-    "cell_quotes": filtered_quotes,
 }
 
 # HTML/JavaScript component
@@ -188,17 +188,9 @@ html = f'''
             font-size: 0.9em;
             color: #555;
         }}
-        .heatmap-0 {{ background-color: #d9f7be; }}
-        .heatmap-1 {{ background-color: #b7eb8f; }}
-        .heatmap-2 {{ background-color: #95de64; }}
-        .heatmap-3 {{ background-color: #73d13d; }}
-        .heatmap-4 {{ background-color: #ffd591; }}
-        .heatmap-5 {{ background-color: #ffc069; }}
-        .heatmap-6 {{ background-color: #ffa940; }}
-        .heatmap-7 {{ background-color: #ff9c6e; }}
-        .heatmap-8 {{ background-color: #ff7a45; }}
-        .heatmap-9 {{ background-color: #ff4d4f; }}
-        .heatmap-10 {{ background-color: #cf1322; }}
+        .heatmap-low {{ background-color: #d9f7be; }}
+        .heatmap-medium {{ background-color: #ffd591; }}
+        .heatmap-high {{ background-color: #ffa39e; }}
     </style>
 </head>
 <body>
@@ -215,8 +207,9 @@ html = f'''
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
         function getHeatmapClass(percentage) {{
-            const level = Math.min(Math.floor(percentage / 10), 10);
-            return `heatmap-${{level}}`;
+            if (percentage <= 20) return 'heatmap-low';
+            if (percentage <= 50) return 'heatmap-medium';
+            return 'heatmap-high';
         }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
@@ -234,7 +227,7 @@ html = f'''
                     const percentValue = parseFloat(percentage);
                     const heatmapClass = getHeatmapClass(percentValue);
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = data.cell_quotes[coord] || [];
+                    const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes) ? data.cell_quotes[coord].quotes : [];
                     rowHtml += `
                         <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
                             <div class="cell-content">
@@ -245,7 +238,7 @@ html = f'''
                 }});
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
-            }};
+            }});
         }}
         buildMatrix();
         
@@ -254,8 +247,9 @@ html = f'''
         const modalQuotes = document.getElementById('modalQuotes');
         const closeSpan = document.getElementsByClassName('close')[0];
         
-        // Click handler for cells
+         // Click handler for cells (FIXED VERSION)
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
+            // Find the closest parent cell element
             const cell = event.target.closest('td.highlighted');
             if (cell) {{
                 const quotes = JSON.parse(cell.getAttribute('data-quotes'));
