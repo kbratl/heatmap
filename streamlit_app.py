@@ -250,7 +250,7 @@ html = f'''
             // Ensure higher saturation for deeper reds
             saturation = 100 - (percentage * 0.3); 
             
-            return "hsl(" + hue + saturation + lightness + )";
+            return "hsl(" + hue + saturation + lightness + % )";
         }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
