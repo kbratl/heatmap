@@ -18,20 +18,19 @@ except Exception as e:
     st.stop()
 
 # Add percentages to the DataFrame
-# Updated percentages dictionary to match EXACT row names from your Excel
 percentages = {
     "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
-    "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6}, 
+    "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},
     "Questioning Competence": {"Processes": 23, "Products": 13, "Tools": 6},
-    "Modeling and comparing competence": {"Processes": 25, "Products": 6, "Tools": 27},  
+    "Modeling and comparing competence": {"Processes": 25, "Products": 6, "Tools": 27},
     "Interpretation Competence": {"Processes": 27, "Products": 9, "Tools": 8},
     "Degree of Control in Management Practices": {"Processes": 33, "Products": 8, "Tools": 9},
-    "Leadership commitment to being flexible": {"Processes": 42, "Products": 13, "Tools": 13}, 
-    "Experimentation and learning": {"Processes": 9, "Products": 14, "Tools": 13},  
+    "Leadership commitment to being flexible": {"Processes": 42, "Products": 13, "Tools": 13},
+    "Experimentation and learning": {"Processes": 9, "Products": 14, "Tools": 13},
     "Defining Flexibility Related Project Objectives": {"Processes": 19, "Products": 8, "Tools": 8},
     "Long-term Perspective": {"Processes": 13, "Products": 11, "Tools": 9},
     "Buffers": {"Processes": 25, "Products": 5, "Tools": 6},
-    "Slacks": {"Processes": 11, "Products": 9, "Tools": 0},  # Changed from 'Slack' to 'Slacks'
+    "Slacks": {"Processes": 11, "Products": 9, "Tools": 0},
     "Supplier-Buyer Cooperation": {"Processes": 25, "Products": 19, "Tools": 13},
     "Multidisciplinary Coordination": {"Processes": 55, "Products": 11, "Tools": 20},
     "Flexibility as Threat vs Opportunity": {"Processes": 25, "Products": 11, "Tools": 11},
@@ -113,6 +112,9 @@ if st.session_state.applied_filters:
             highlighted_cells.append(coord)
             filtered_quotes[coord] = data  # Store filtered quotes correctly
 
+# Debugging: Print highlighted cells and filtered quotes
+st.write("Highlighted Cells:", highlighted_cells)
+st.write("Filtered Quotes:", filtered_quotes)
 
 # Prepare data for HTML component
 matrix_data = {
