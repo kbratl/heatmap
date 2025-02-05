@@ -246,7 +246,7 @@ html = f'''
         const modalQuotes = document.getElementById('modalQuotes');
         const closeSpan = document.getElementsByClassName('close')[0];
         
-        // Click handler for cells
+         // Click handler for cells
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
             const target = event.target;
             if (target.tagName === 'TD' && target.classList.contains('highlighted')) {{
