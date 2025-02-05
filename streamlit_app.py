@@ -21,13 +21,13 @@ except Exception as e:
 # Updated percentages dictionary to match EXACT row names from your Excel
 percentages = {
     "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
-    "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},  # Lowercase 'c' in contract
+    "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6}, 
     "Questioning Competence": {"Processes": 23, "Products": 13, "Tools": 6},
-    "Modeling and comparing competence": {"Processes": 25, "Products": 6, "Tools": 27},  # Lowercase 'c' in comparing/competence
+    "Modeling and comparing competence": {"Processes": 25, "Products": 6, "Tools": 27},  
     "Interpretation Competence": {"Processes": 27, "Products": 9, "Tools": 8},
     "Degree of Control in Management Practices": {"Processes": 33, "Products": 8, "Tools": 9},
-    "Leadership commitment to being flexible": {"Processes": 42, "Products": 13, "Tools": 13},  # Lowercase 'c' in commitment
-    "Experimentation and learning": {"Processes": 9, "Products": 14, "Tools": 13},  # Lowercase 'l' in learning
+    "Leadership commitment to being flexible": {"Processes": 42, "Products": 13, "Tools": 13}, 
+    "Experimentation and learning": {"Processes": 9, "Products": 14, "Tools": 13},  
     "Defining Flexibility Related Project Objectives": {"Processes": 19, "Products": 8, "Tools": 8},
     "Long-term Perspective": {"Processes": 13, "Products": 11, "Tools": 9},
     "Buffers": {"Processes": 25, "Products": 5, "Tools": 6},
@@ -227,7 +227,7 @@ html = f'''
                     const percentValue = parseFloat(percentage);
                     const heatmapClass = getHeatmapClass(percentValue);
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                   const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes) ? data.cell_quotes[coord].quotes : [];
+                    const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes) ? data.cell_quotes[coord].quotes : [];
                     rowHtml += `
                         <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
                             <div class="cell-content">
@@ -247,7 +247,7 @@ html = f'''
         const modalQuotes = document.getElementById('modalQuotes');
         const closeSpan = document.getElementsByClassName('close')[0];
         
-         // Click handler for cells
+        // Click handler for cells
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
             const target = event.target;
             if (target.tagName === 'TD' && target.classList.contains('highlighted')) {{
