@@ -105,6 +105,7 @@ if apply_pressed:
         st.session_state.applied_filters = None
 
 # Calculate highlighted cells based on applied filters
+filtered_quotes = {}
 highlighted_cells = []
 if st.session_state.applied_filters:
     main_filter, subfilter = st.session_state.applied_filters
@@ -112,13 +113,15 @@ if st.session_state.applied_filters:
     for coord, data in cell_quotes.items():
         if data["filters"].get(main_filter) and subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
+            filtered_quotes[coord] = data  # Ensure filtered quotes are passed to JavaScript
+
 
 # Prepare data for HTML component
 matrix_data = {
     "column_names": column_names,
     "row_names": row_names,
     "definitions": definitions,
-    "cell_quotes": cell_quotes,
+    "cell_quotes": filtered_quotes,  # Pass only relevant quotes
     "highlighted_cells": highlighted_cells,
 }
 
@@ -226,7 +229,7 @@ html = f'''
                     const percentValue = parseFloat(percentage);
                     const heatmapClass = getHeatmapClass(percentValue);
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = data.cell_quotes[coord]?.quotes || [];
+                   const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes) ? data.cell_quotes[coord].quotes : [];
                     rowHtml += `
                         <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
                             <div class="cell-content">
