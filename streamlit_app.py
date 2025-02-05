@@ -37,9 +37,12 @@ percentages = {
     "Immediate Profit vs Sustained Success": {"Processes": 20, "Products": 14, "Tools": 5},
 }
 
+# Update DataFrame safely
 for row, cols in percentages.items():
-    for col, percent in cols.items():
-        df.at[row, col] = f"{percent}%|{df.at[row, col]}"
+    if row in df.index:  # Prevent KeyError
+        for col, percent in cols.items():
+            if col in df.columns:  # Ensure column exists
+                df.at[row, col] = f"{percent}%|{df.at[row, col]}"
 
 # Build definitions dictionary
 definitions = {
