@@ -134,10 +134,9 @@ if st.session_state.applied_filters:
     
     # Filter quotes
     for coord, data in cell_quotes.items():
-        if main_filter in data["filters"]:
-            if subfilter in data["filters"][main_filter]:
-                highlighted_cells.append(coord)
-                filtered_quotes[coord] = data["quotes"]
+        if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
+            highlighted_cells.append(coord)
+            filtered_quotes[coord] = data["quotes"]
 
 # Rebuild DataFrame with current data
 df = pd.DataFrame(index=row_names, columns=column_names)
@@ -145,13 +144,17 @@ for row in row_names:
     for col in column_names:
         explanation = original_explanations.get(row, {}).get(col, '')
         percent = current_percentages.get(row, {}).get(col, 0)
-        # Only store percentage if cell is highlighted
-        if f"{row_names.index(row)},{column_names.index(col)}" in highlighted_cells:
+        
+        # Show percentage if: no filters applied OR cell is highlighted
+        show_percentage = not st.session_state.applied_filters or \
+                        f"{row_names.index(row)},{column_names.index(col)}" in highlighted_cells
+        
+        if show_percentage:
             df.at[row, col] = f"{percent}|{explanation}"
         else:
             df.at[row, col] = f"|{explanation}"
-            
-# Rebuild definitions after updating DataFrame
+
+# Rebuild definitions
 definitions = {
     row: {col: str(df.at[row, col]) for col in column_names}
     for row in row_names
@@ -165,7 +168,6 @@ matrix_data = {
     "cell_quotes": filtered_quotes,
     "highlighted_cells": highlighted_cells,
 }
-
 # HTML/JavaScript component
 html = f'''
 <!DOCTYPE html>
@@ -185,17 +187,10 @@ html = f'''
             width: 100%;
             text-align: center;
             border-radius: 3px;
+            color: white;
         }}
-        .heatmap-cell {{
-            transition: background-color 0.3s;
-        }}
-    </style>
-</head>
-<body>
-    <div class="matrix-wrapper">
-        <table id="matrixTable"></table>
-    </div>
-    <!-- Modal structure -->
+        .explanation {{ font-size: 0.9em; color: #555; }}
+     <!-- Modal Structure -->
     <div id="quoteModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -212,11 +207,14 @@ html = f'''
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
+            
+            //Build headers
             let headerRow = '<tr><th>Factors</th>';
             data.column_names.forEach(col => headerRow += `<th>${{col}}</th>`);
             headerRow += '</tr>';
             table.innerHTML = headerRow;
-       // Build body
+            
+          // Build body
             data.row_names.forEach((rowName, rowIndex) => {{
                 let rowHtml = `<tr><td>${{rowName}}</td>`;
                 data.column_names.forEach((colName, colIndex) => {{
@@ -225,19 +223,26 @@ html = f'''
                     const [percentage, explanation] = content.split('|');
                     const isHighlighted = data.highlighted_cells.includes(coord);
                     
-                    // Get percentage value or 0 if empty
-                    const percentValue = percentage ? parseFloat(percentage) : 0;
-                    const color = getHeatmapColor(percentValue);
+                   // Get percentage value or null
+                    const hasPercentage = percentage !== '';
+                    const percentValue = hasPercentage ? parseFloat(percentage) : null;
                     
-                    // Only show percentage if highlighted
-                    const percentageDisplay = isHighlighted 
-                        ? `<div class="percentage" style="background-color: ${{color}}">${{percentValue}}%</div>` 
-                        : '';
+                    // Create percentage display
+                    let percentageDisplay = '';
+                    if (hasPercentage) {{
+                        const color = getHeatmapColor(percentValue);
+                        percentageDisplay = `
+                            <div class="percentage" style="background-color: ${{color}}">
+                                ${{percentValue}}%
+                            </div>`;
+                    }}
+                    
+                    // Get quotes
+                    const quotes = data.cell_quotes[coord] || [];
                     
                     rowHtml += `
-                        <td class="heatmap-cell ${{isHighlighted ? 'highlighted' : ''}}" 
-                            style="background-color: ${{color}}"
-                            data-quotes='${{JSON.stringify(data.cell_quotes[coord] || [])}}'>
+                        <td class="${{isHighlighted ? 'highlighted' : ''}}" 
+                            data-quotes='${{JSON.stringify(quotes)}}'>
                             <div class="cell-content">
                                 ${{percentageDisplay}}
                                 <div class="explanation">${{explanation}}</div>
@@ -249,37 +254,23 @@ html = f'''
             }});
         }}
         buildMatrix();
-        // Modal handling remains unchanged
-  // Modal handling
-        const modal = document.getElementById('quoteModal');
-        const modalQuotes = document.getElementById('modalQuotes');
-        const closeSpan = document.getElementsByClassName('close')[0];
         
-         // Click handler for cells (FIXED VERSION)
+        // Modal handling
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
-            // Find the closest parent cell element
             const cell = event.target.closest('td.highlighted');
             if (cell) {{
                 const quotes = JSON.parse(cell.getAttribute('data-quotes'));
                 if (quotes && quotes.length > 0) {{
-                    modalQuotes.innerHTML = quotes.map(quote => `<p>${{quote}}</p>`).join('');
-                    modal.style.display = 'block';
+                    document.getElementById('modalQuotes').innerHTML = 
+                        quotes.map(quote => `<p>${{quote}}</p>`).join('');
+                    document.getElementById('quoteModal').style.display = 'block';
                 }}
             }}
         }});
-        
-        // Close modal handlers
-        closeSpan.onclick = function() {{
-            modal.style.display = 'none';
-        }};
-        window.onclick = function(event) {{
-            if (event.target === modal) {{
-                modal.style.display = 'none';
-            }}
-        }};
     </script>
 </body>
 </html>'''
+
 
 if st.session_state.applied_filters:
     st.info("ℹ️ Please click on the highlighted cells to view the corresponding quotes")
