@@ -231,7 +231,7 @@ html = f'''
                     rowHtml += `
                         <td class="${{isHighlighted ? 'highlighted' : ''}}" ${heatmapClass}" data-quotes='${JSON.stringify(quotes)}'>
                             <div class="cell-content">
-                                ${isHighlighted ? `<div class="percentage">${percentage}</div>` : ''}
+                                ${isHighlighted ? `<div class="percentage">${percentage}</div>` : ''}}
                                 <div class="explanation">${{explanation}}</div>
                             </div>
                         </td>`;
