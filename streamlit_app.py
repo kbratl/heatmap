@@ -132,7 +132,7 @@ if st.session_state.applied_filters:
             if row in current_percentages:
                 current_percentages[row].update(cols)
     
-    # FIXED INDENTATION: Filter quotes INSIDE applied_filters block
+    # Filter quotes
     for coord, data in cell_quotes.items():
         if main_filter in data["filters"]:
             if subfilter in data["filters"][main_filter]:
@@ -145,9 +145,12 @@ for row in row_names:
     for col in column_names:
         explanation = original_explanations.get(row, {}).get(col, '')
         percent = current_percentages.get(row, {}).get(col, 0)
-        df.at[row, col] = f"{percent}%|{explanation}"
-
-
+        # Only store percentage if cell is highlighted
+        if f"{row_names.index(row)},{column_names.index(col)}" in highlighted_cells:
+            df.at[row, col] = f"{percent}|{explanation}"
+        else:
+            df.at[row, col] = f"|{explanation}"
+            
 # Rebuild definitions after updating DataFrame
 definitions = {
     row: {col: str(df.at[row, col]) for col in column_names}
@@ -183,8 +186,9 @@ html = f'''
             text-align: center;
             border-radius: 3px;
         }}
-        .explanation {{ font-size: 0.9em; color: #555; }}
-        /* Modal styles remain unchanged */
+        .heatmap-cell {{
+            transition: background-color 0.3s;
+        }}
     </style>
 </head>
 <body>
@@ -200,8 +204,9 @@ html = f'''
     </div>
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-        function getHeatmapColor(percentage) {{
-            const hue = (100 - percentage) * 1.2; // Red (0%) to Green (100%)
+         function getHeatmapColor(percentage) {{
+            // Red (0%) to Green (100%) gradient
+            const hue = percentage * 1.2;
             return `hsl(${{hue}}, 100%, 50%)`;
         }}
         function buildMatrix() {{
@@ -211,21 +216,30 @@ html = f'''
             data.column_names.forEach(col => headerRow += `<th>${{col}}</th>`);
             headerRow += '</tr>';
             table.innerHTML = headerRow;
-            
+       // Build body
             data.row_names.forEach((rowName, rowIndex) => {{
                 let rowHtml = `<tr><td>${{rowName}}</td>`;
                 data.column_names.forEach((colName, colIndex) => {{
                     const coord = `${{rowIndex}},${{colIndex}}`;
                     const content = data.definitions[rowName][colName];
                     const [percentage, explanation] = content.split('|');
-                    const percentValue = parseFloat(percentage);
-                    const color = getHeatmapColor(percentValue);
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = data.cell_quotes[coord] || [];
+                    
+                    // Get percentage value or 0 if empty
+                    const percentValue = percentage ? parseFloat(percentage) : 0;
+                    const color = getHeatmapColor(percentValue);
+                    
+                    // Only show percentage if highlighted
+                    const percentageDisplay = isHighlighted 
+                        ? `<div class="percentage" style="background-color: ${{color}}">${{percentValue}}%</div>` 
+                        : '';
+                    
                     rowHtml += `
-                        <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
+                        <td class="heatmap-cell ${{isHighlighted ? 'highlighted' : ''}}" 
+                            style="background-color: ${{color}}"
+                            data-quotes='${{JSON.stringify(data.cell_quotes[coord] || [])}}'>
                             <div class="cell-content">
-                                <div class="percentage" style="background-color: ${{color}}">${{percentage}}%</div>
+                                ${{percentageDisplay}}
                                 <div class="explanation">${{explanation}}</div>
                             </div>
                         </td>`;
