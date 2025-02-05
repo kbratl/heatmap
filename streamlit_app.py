@@ -247,11 +247,12 @@ html = f'''
         const modalQuotes = document.getElementById('modalQuotes');
         const closeSpan = document.getElementsByClassName('close')[0];
         
-        // Click handler for cells
+         // Click handler for cells (FIXED VERSION)
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
-            const target = event.target;
-            if (target.tagName === 'TD' && target.classList.contains('highlighted')) {{
-                const quotes = JSON.parse(target.getAttribute('data-quotes'));
+            // Find the closest parent cell element
+            const cell = event.target.closest('td.highlighted');
+            if (cell) {{
+                const quotes = JSON.parse(cell.getAttribute('data-quotes'));
                 if (quotes && quotes.length > 0) {{
                     modalQuotes.innerHTML = quotes.map(quote => `<p>${{quote}}</p>`).join('');
                     modal.style.display = 'block';
