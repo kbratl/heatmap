@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
 import json
 
@@ -11,47 +11,11 @@ try:
     df = pd.read_excel(file_path, index_col=0)
     df.index = df.index.str.strip()
     df.columns = ['Processes', 'Products', 'Tools']
-    # Check for missing percentage rows
-missing_percentage_rows = [row for row in percentages.keys() if row not in row_names]
-if missing_percentage_rows:
-    st.error(f"Missing rows in Excel: {missing_percentage_rows}")
-    st.stop()
-
-# Check for valid columns
-required_columns = ['Processes', 'Products', 'Tools']
-missing_columns = [col for col in required_columns if col not in df.columns]
-if missing_columns:
-    st.error(f"Missing required columns: {missing_columns}")
-    st.stop()
     row_names = df.index.tolist()
     column_names = df.columns.tolist()
 except Exception as e:
     st.error(f"Error loading Excel file: {e}")
     st.stop()
-
-# Add percentages to the DataFrame
-percentages = {
-    "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
-    "Post-Contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},
-    "Questioning Competence": {"Processes": 23, "Products": 13, "Tools": 6},
-    "Modeling and comparing competence": {"Processes": 25, "Products": 6, "Tools": 27},
-    "Interpretation Competence": {"Processes": 27, "Products": 9, "Tools": 8},
-    "Degree of Control in Management Practices": {"Processes": 33, "Products": 8, "Tools": 9},
-    "Leadership commitment to being flexible": {"Processes": 42, "Products": 13, "Tools": 13},
-    "Experimentation and learning": {"Processes": 9, "Products": 14, "Tools": 13},
-    "Defining Flexibility Related Project Objectives": {"Processes": 19, "Products": 8, "Tools": 8},
-    "Long-term Perspective": {"Processes": 13, "Products": 11, "Tools": 9},
-    "Buffers": {"Processes": 25, "Products": 5, "Tools": 6},
-    "Slacks": {"Processes": 11, "Products": 9, "Tools": 0},
-    "Supplier-Buyer Cooperation": {"Processes": 25, "Products": 19, "Tools": 13},
-    "Multidisciplinary Coordination": {"Processes": 55, "Products": 11, "Tools": 20},
-    "Flexibility as Threat vs Opportunity": {"Processes": 25, "Products": 11, "Tools": 11},
-    "Immediate Profit vs Sustained Success": {"Processes": 20, "Products": 14, "Tools": 5},
-}
-
-for row, cols in percentages.items():
-    for col, percent in cols.items():
-        df.at[row, col] = f"{percent}%|{df.at[row, col]}"
 
 # Build definitions dictionary
 definitions = {
@@ -175,23 +139,6 @@ html = f'''
             background: #f8f9fa;
             border-radius: 4px;
         }}
-        .cell-content {{
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }}
-        .percentage {{
-            font-weight: bold;
-            margin-bottom: 5px;
-        }}
-        .explanation {{
-            font-size: 0.9em;
-            color: #555;
-        }}
-        .heatmap-low {{ background-color: #d9f7be; }}
-        .heatmap-medium {{ background-color: #ffd591; }}
-        .heatmap-high {{ background-color: #ffa39e; }}
     </style>
 </head>
 <body>
@@ -207,11 +154,6 @@ html = f'''
     </div>
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-        function getHeatmapClass(percentage) {{
-            if (percentage <= 20) return 'heatmap-low';
-            if (percentage <= 50) return 'heatmap-medium';
-            return 'heatmap-high';
-        }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
@@ -224,18 +166,9 @@ html = f'''
                 data.column_names.forEach((colName, colIndex) => {{
                     const coord = `${{rowIndex}},${{colIndex}}`;
                     const content = data.definitions[rowName][colName];
-                    const [percentage, explanation] = content.split('|');
-                    const percentValue = parseFloat(percentage);
-                    const heatmapClass = getHeatmapClass(percentValue);
                     const isHighlighted = data.highlighted_cells.includes(coord);
                     const quotes = data.cell_quotes[coord]?.quotes || [];
-                    rowHtml += `
-                        <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
-                            <div class="cell-content">
-                                <div class="percentage ${{heatmapClass}}">${{percentage}}</div>
-                                <div class="explanation">${{explanation}}</div>
-                            </div>
-                        </td>`;
+                    rowHtml += `<td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>${{content}}</td>`;
                 }});
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
