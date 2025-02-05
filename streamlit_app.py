@@ -16,6 +16,59 @@ try:
 except Exception as e:
     st.error(f"Error loading Excel file: {e}")
     st.stop()
+    
+    # Define the percentages for each factor-column combination
+percentages = {
+    ("Pre-Contract Motivations", "Processes"): 16,
+    ("Pre-Contract Motivations", "Products"): 8,
+    ("Pre-Contract Motivations", "Tools"): 13,
+    ("Post-Contract Motivations", "Processes"): 50,
+    ("Post-Contract Motivations", "Products"): 11,
+    ("Post-Contract Motivations", "Tools"): 6,
+    ("Questioning Competence", "Processes"): 23,
+    ("Questioning Competence", "Products"): 13,
+    ("Questioning Competence", "Tools"): 6,
+    ("Modeling and Comparing Competence", "Processes"): 25,
+    ("Modeling and Comparing Competence", "Products"): 6,
+    ("Modeling and Comparing Competence", "Tools"): 27,
+    ("Interpretation Competence", "Processes"): 27,
+    ("Interpretation Competence", "Products"): 9,
+    ("Interpretation Competence", "Tools"): 8,
+    ("Degree of Control in Management Practices", "Processes"): 33,
+    ("Degree of Control in Management Practices", "Products"): 8,
+    ("Degree of Control in Management Practices", "Tools"): 9,
+    ("Leadership Commitment to Being Flexible", "Processes"): 42,
+    ("Leadership Commitment to Being Flexible", "Products"): 13,
+    ("Leadership Commitment to Being Flexible", "Tools"): 13,
+    ("Experimentation and Learning", "Processes"): 9,
+    ("Experimentation and Learning", "Products"): 14,
+    ("Experimentation and Learning", "Tools"): 13,
+    ("Defining Flexibility Related Project Objectives", "Processes"): 19,
+    ("Defining Flexibility Related Project Objectives", "Products"): 8,
+    ("Defining Flexibility Related Project Objectives", "Tools"): 8,
+    ("Long-term Perspective", "Processes"): 13,
+    ("Long-term Perspective", "Products"): 11,
+    ("Long-term Perspective", "Tools"): 9,
+    ("Buffers", "Processes"): 25,
+    ("Buffers", "Products"): 5,
+    ("Buffers", "Tools"): 6,
+    ("Slack", "Processes"): 11,
+    ("Slack", "Products"): 9,
+    ("Supplier-Buyer Cooperation", "Processes"): 25,
+    ("Supplier-Buyer Cooperation", "Products"): 19,
+    ("Supplier-Buyer Cooperation", "Tools"): 13,
+    ("Multidisciplinary Coordination", "Processes"): 55,
+    ("Multidisciplinary Coordination", "Products"): 11,
+    ("Multidisciplinary Coordination", "Tools"): 20,
+    ("Flexibility as Threat vs Opportunity", "Processes"): 25,
+    ("Flexibility as Threat vs Opportunity", "Products"): 11,
+    ("Flexibility as Threat vs Opportunity", "Tools"): 11,
+    ("Immediate Profit vs Sustained Success", "Processes"): 20,
+    ("Immediate Profit vs Sustained Success", "Products"): 14,
+    ("Immediate Profit vs Sustained Success", "Tools"): 5,
+}
+
+
 
 # Build definitions dictionary
 definitions = {
@@ -32,6 +85,29 @@ filters_data = {
     "Roles": ["Analyst", "Architect", "Consultant", "Director", 
              "Engineer", "Manager", "President", "Vice President"],
 }
+
+# Create a matrix with percentages
+heatmap_data = pd.DataFrame(np.nan, index=row_names, columns=column_names)
+for (row, col), value in percentages.items():
+    if row in row_names and col in column_names:
+        heatmap_data.at[row, col] = value
+
+# Plot heatmap
+fig, ax = plt.subplots(figsize=(10, 8))
+cmap = sns.color_palette(["#00ff00", "#ffcc00", "#ff0000"])  # Green, Orange, Red
+sns.heatmap(
+    heatmap_data, 
+    annot=True, 
+    fmt=".0f%%", 
+    cmap=cmap, 
+    linewidths=0.5, 
+    linecolor="black", 
+    cbar=True,
+    ax=ax
+)
+plt.title("Heatmap of Flexibility Contributing Factors")
+st.pyplot(fig)
+
 
 # Configure cell quotes
 cell_quotes = {
