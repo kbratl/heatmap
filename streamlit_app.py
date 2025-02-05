@@ -18,7 +18,7 @@ except Exception as e:
     st.stop()
 
 # Add percentages to the DataFrame
-percentages = {
+base_percentages = {
     "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
     "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},
     "Questioning Competence": {"Processes": 23, "Products": 13, "Tools": 6},
@@ -35,6 +35,16 @@ percentages = {
     "Multidisciplinary Coordination": {"Processes": 55, "Products": 11, "Tools": 20},
     "Flexibility as Threat vs Opportunity": {"Processes": 25, "Products": 11, "Tools": 11},
     "Immediate Profit vs Sustained Success": {"Processes": 20, "Products": 14, "Tools": 5},
+}
+
+# Dynamic percentages for rolesXconsultant combo
+dynamic_percentages = {
+    "Pre-Contract Motivations": {"Processes": 32, "Products": 0, "Tools": 0},
+    "Interpretation Competence": {"Products": 5, "Processes": 0, "Tools": 0},
+    "Leadership commitment to being flexible": {"Products": 10, "Processes": 0, "Tools": 0},
+    "Experimentation and learning": {"Products": 12, "Processes": 0, "Tools": 0},
+    "Defining Flexibility Related Project Objectives": {"Tools": 25, "Processes": 0, "Products": 0},
+    "Long-term Perspective": {"Tools": 16, "Processes": 0, "Products": 0},
 }
 
 # Validate that all rows in percentages exist in the DataFrame
@@ -100,6 +110,19 @@ if apply_pressed:
     else:
         st.warning("Please select both a main filter and subfilter before applying")
         st.session_state.applied_filters = None
+# Select appropriate percentages
+base_percentages = dynamic_percentages if st.session_state.applied_filters == ("Roles", "Consultant") else base_percentages
+
+# Prepare the DataFrame with percentages
+df_copy = df.copy()
+for row, cols in percentages.items():
+    for col, percent in cols.items():
+        if percent > 0:  # Only overwrite if there's a dynamic percentage
+            df_copy.at[row, col] = f"{percent}%|{df.at[row, col]}"
+
+# Prepare data for matrix
+definitions = {row: {col: str(df_copy.at[row, col]) for col in column_names} for row in row_names}
+
 
 # Calculate highlighted cells based on applied filters
 filtered_quotes = {}
@@ -118,9 +141,9 @@ if st.session_state.applied_filters:
 matrix_data = {
     "column_names": column_names,
     "row_names": row_names,
-    "definitions": definitions,
-    "cell_quotes": filtered_quotes,  # Pass only relevant quotes
+    "definitions": {row: {col: str(df.at[row, col]) for col in column_names} for row in row_names},
     "highlighted_cells": highlighted_cells,
+    "cell_quotes": filtered_quotes,
 }
 
 # HTML/JavaScript component
@@ -188,9 +211,17 @@ html = f'''
             font-size: 0.9em;
             color: #555;
         }}
-        .heatmap-low {{ background-color: #d9f7be; }}
-        .heatmap-medium {{ background-color: #ffd591; }}
-        .heatmap-high {{ background-color: #ffa39e; }}
+        .heatmap-0 {{ background-color: #D9F7BE; }}
+        .heatmap-1 {{ background-color: #B7EB8F; }}
+        .heatmap-2 {{ background-color: #95DE64; }}
+        .heatmap-3 {{ background-color: #73D13D; }}
+        .heatmap-4 {{ background-color: #FFD591; }}
+        .heatmap-5 {{ background-color: #FFC069; }}
+        .heatmap-6 {{ background-color: #FFA940; }}
+        .heatmap-7 {{ background-color: #FF7A45; }}
+        .heatmap-8 {{ background-color: #FF4D4F; }}
+        .heatmap-9 {{ background-color: #F5222D; }}
+        .heatmap-10 {{ background-color: #CF1322; }}
     </style>
 </head>
 <body>
