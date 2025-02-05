@@ -53,6 +53,20 @@ dynamic_percentages = {
 # Initialize current percentages
 current_percentages = {row: cols.copy() for row, cols in default_percentages.items()}
 
+# Create INITIAL df
+df = pd.DataFrame(index=row_names, columns=column_names)
+for row in row_names:
+    for col in column_names:
+        explanation = original_explanations.get(row, {}).get(col, '')
+        percent = current_percentages.get(row, {}).get(col, 0)
+        df.at[row, col] = f"{percent}%|{explanation}"
+
+# build definitions
+definitions = {
+    row: {col: str(df.at[row, col]) for col in column_names}
+    for row in row_names
+}
+
 # Configure filters
 filters_data = {
     "Phases": ["Monitoring", "Pre-Contract", "Planning", "Execution", "Delivery"],
@@ -78,11 +92,6 @@ cell_quotes = {
 
 
 
-# Build definitions dictionary
-definitions = {
-    row: {col: str(df.at[row, col]) for col in column_names}
-    for row in row_names
-}
 
 # Streamlit UI
 st.title("Flexibility Contributing Factors Matrix")
@@ -124,10 +133,11 @@ if st.session_state.applied_filters:
                 current_percentages[row].update(cols)
     
     # Filter quotes
-    for coord, data in cell_quotes.items():
-        if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
+for coord, data in cell_quotes.items():
+    if main_filter in data["filters"]:
+        if subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
-            filtered_quotes[coord] = data["quotes"]
+            filtered_quotes[coord] = data["quotes"]  # Store only quotes array
 
 # Rebuild DataFrame with current data
 df = pd.DataFrame(index=row_names, columns=column_names)
@@ -136,6 +146,7 @@ for row in row_names:
         explanation = original_explanations.get(row, {}).get(col, '')
         percent = current_percentages.get(row, {}).get(col, 0)
         df.at[row, col] = f"{percent}%|{explanation}"
+
 
 # Rebuild definitions after updating DataFrame
 definitions = {
