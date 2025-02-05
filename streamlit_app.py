@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
 import json
 
@@ -17,9 +17,8 @@ except Exception as e:
     st.error(f"Error loading Excel file: {e}")
     st.stop()
 
-
 # Add percentages to the DataFrame
-base_percentages = {
+percentages = {
     "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
     "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},
     "Questioning Competence": {"Processes": 23, "Products": 13, "Tools": 6},
@@ -38,27 +37,16 @@ base_percentages = {
     "Immediate Profit vs Sustained Success": {"Processes": 20, "Products": 14, "Tools": 5},
 }
 
-# Modified percentages for rolesxconsultant
-dynamic_percentages = {
-    "0,0": {"value": 32, "filters": {"Roles": ["Consultant"]}},
-    "4,1": {"value": 5, "filters": {"Roles": ["Consultant"]}},
-    "6,1": {"value": 10, "filters": {"Roles": ["Consultant"]}},
-    "7,1": {"value": 12, "filters": {"Roles": ["Consultant"]}},
-    "9,2": {"value": 25, "filters": {"Roles": ["Consultant"]}},
-    "8,2": {"value": 16, "filters": {"Roles": ["Consultant"]}},
-}
-
-# Initialize DataFrame with base percentages
-for row, cols in base_percentages.items():
-    for col, percent in cols.items():
-        df.at[row, col] = f"{percent}%|{df.at[row, col]}"
-
-# Validate base percentages
-missing_percentage_rows = [row for row in base_percentages.keys() if row not in row_names]
+# Validate that all rows in percentages exist in the DataFrame
+missing_percentage_rows = [row for row in percentages.keys() if row not in row_names]
 if missing_percentage_rows:
-    st.error(f"Missing rows in Excel: {missing_percentage_rows}")
+    st.error(f"Error: The following rows in the 'percentages' dictionary do not exist in the Excel file: {missing_percentage_rows}")
     st.stop()
 
+# Add percentages to the DataFrame
+for row, cols in percentages.items():
+    for col, percent in cols.items():
+        df.at[row, col] = f"{percent}%|{df.at[row, col]}"
 
 # Build definitions dictionary
 definitions = {
@@ -102,9 +90,8 @@ with col3:
     apply_pressed = st.button("Apply Filters")
 
 # Initialize session state
-for row, cols in base_percentages.items():
-    for col, percent in cols.items():
-        df.at[row, col] = f"{percent}%|{df.at[row, col]}"
+if 'applied_filters' not in st.session_state:
+    st.session_state.applied_filters = None
 
 # Handle filter application
 if apply_pressed:
@@ -125,24 +112,7 @@ if st.session_state.applied_filters:
             highlighted_cells.append(coord)
             filtered_quotes[coord] = data  # Store filtered quotes correctly
 
-# Apply dynamic percentages after filter application
-if st.session_state.applied_filters:
-    main_filter, subfilter = st.session_state.applied_filters
-    
-    # Apply dynamic percentages
-    for coord, data in dynamic_percentages.items():
-        if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
-            row_idx, col_idx = map(int, coord.split(','))
-            row_name = row_names[row_idx]
-            col_name = column_names[col_idx]
-            current_content = df.at[row_name, col_name].split('|')
-            df.at[row_name, col_name] = f"{data['value']}%|{current_content[1]}"
 
-# Rebuild definitions with updated percentages
-definitions = {
-    row: {col: str(df.at[row, col]) for col in column_names}
-    for row in row_names
-}
 
 # Prepare data for HTML component
 matrix_data = {
@@ -153,58 +123,19 @@ matrix_data = {
     "highlighted_cells": highlighted_cells,
 }
 
-# Modified JavaScript heatmap function
-heatmap_js = """
-function getHeatmapColor(percentage) {
-    // Convert percentage to hue (0-120 degrees: red to green)
-    const hue = (100 - Math.min(percentage, 100)) * 1.2;
-    const saturation = 80;
-    const lightness = 50 + (percentage / 100 * 20);
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-}
-"""
 # HTML/JavaScript component
 html = f'''
 <!DOCTYPE html>
 <html>
 <head>
     <style>
-        .matrix-wrapper { overflow: auto; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #f8f9fa; position: sticky; top: 0; }
-        .highlighted { border: 2px solid #2196f3 !important; cursor: pointer; }
+        .matrix-wrapper {{ overflow: auto; }}
+        table {{ border-collapse: collapse; width: 100%; }}
+        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+        th {{ background: #f8f9fa; position: sticky; top: 0; }}
+        .highlighted {{ background: #e3f2fd !important; border: 2px solid #2196f3 !important; cursor: pointer; }}
         
-        /* Percentage styling */
-       .percentage {{
-            font-weight: bold;
-            margin-bottom: 5px;
-            padding: 3px;
-            border-radius: 4px;
-            width: fit-content;
-            background: rgba(255, 255, 255, 0.3);
-        }}
-        .cell-content {{
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 80px;
-        }}
-        /* Modern gradient heatmap colors */
-        .heatmap-0 {{ background-color: #ffd6e7; }}
-        .heatmap-1 {{ background-color: #ffbfd3; }}
-        .heatmap-2 {{ background-color: #ffa8bf; }}
-        .heatmap-3 {{ background-color: #ff91ab; }}
-        .heatmap-4 {{ background-color: #ff7a97; }}
-        .heatmap-5 {{ background-color: #ff6383; }}
-        .heatmap-6 {{ background-color: #ff4c6f; }}
-        .heatmap-7 {{ background-color: #ff355b; }}
-        .heatmap-8 {{ background-color: #ff1e47; }}
-        .heatmap-9 {{ background-color: #ff0733; }}
-
-     
-          /* Modal styles */
+        /* Modal styles */
         .modal {{
             display: none;
             position: fixed;
@@ -274,89 +205,73 @@ html = f'''
         </div>
     </div>
     <script>
-      function getHeatmapColor(percentage) {{
-            const pinkShades = [
-                '#ffd6e7', '#ffbfd3', '#ffa8bf', '#ff91ab',
-                '#ff7a97', '#ff6383', '#ff4c6f', '#ff355b',
-                '#ff1e47', '#ff0733'
-            ];
-            return pinkShades[Math.min(Math.floor(percentage/10), 9)];
-        }}
-    </script>
-
-    <div class="matrix-wrapper">
-        <table id="matrixTable"></table>
-    </div>
-
-   <!-- Single modal structure -->
-    <div id="quoteModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="modalQuotes"></div>
-        </div>
-    </div>
-
-    <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-        
+        function getHeatmapClass(percentage) {{
+            if (percentage <= 20) return 'heatmap-low';
+            if (percentage <= 50) return 'heatmap-medium';
+            return 'heatmap-high';
+        }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
-            
-            // Header row
-           let headerRow = '<tr><th>Factors</th>';
-            data.column_names.forEach(col => headerRow += `<th>${{col}}</th>`);
-            table.innerHTML = headerRow + '</tr>';
-
-            // Build rows
+            let headerRow = '<tr><th>Factors</th>';
+            data.column_names.forEach(col => {{ headerRow += `<th>${{col}}</th>`; }});
+            headerRow += '</tr>';
+            table.innerHTML = headerRow;
             data.row_names.forEach((rowName, rowIndex) => {{
                 let rowHtml = `<tr><td>${{rowName}}</td>`;
                 data.column_names.forEach((colName, colIndex) => {{
                     const coord = `${{rowIndex}},${{colIndex}}`;
-                    const [percentage, explanation] = data.definitions[rowName][colName].split('|');
-                    const color = getHeatmapColor(parseFloat(percentage));
-                    
+                    const content = data.definitions[rowName][colName];
+                    const [percentage, explanation] = content.split('|');
+                    const percentValue = parseFloat(percentage);
+                    const heatmapClass = getHeatmapClass(percentValue);
+                    const isHighlighted = data.highlighted_cells.includes(coord);
+                    const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes) ? data.cell_quotes[coord].quotes : [];
                     rowHtml += `
-                        <td class="${{data.highlighted_cells.includes(coord) ? 'highlighted' : ''}}"
-                            style="background-color: ${{color}}"
-                            data-quotes='${{JSON.stringify(data.cell_quotes[coord]?.quotes || [])}}'>
+                        <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
                             <div class="cell-content">
-                                <div class="percentage">${{percentage}}</div>
+                                <div class="percentage ${{heatmapClass}}">${{percentage}}</div>
                                 <div class="explanation">${{explanation}}</div>
                             </div>
                         </td>`;
                 }});
-                table.innerHTML += rowHtml + '</tr>';
+                rowHtml += '</tr>';
+                table.innerHTML += rowHtml;
             }});
         }}
-
-       // Initialize matrix and modal handlers
         buildMatrix();
+        
+        // Modal handling
         const modal = document.getElementById('quoteModal');
         const modalQuotes = document.getElementById('modalQuotes');
         const closeSpan = document.getElementsByClassName('close')[0];
-
+        
+         // Click handler for cells (FIXED VERSION)
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
+            // Find the closest parent cell element
             const cell = event.target.closest('td.highlighted');
             if (cell) {{
                 const quotes = JSON.parse(cell.getAttribute('data-quotes'));
-                if (quotes && quotes.length) {{
-                    modalQuotes.innerHTML = quotes.map(quote => 
-                        `<p>${{quote}}</p>`
-                    ).join('');
+                if (quotes && quotes.length > 0) {{
+                    modalQuotes.innerHTML = quotes.map(quote => `<p>${{quote}}</p>`).join('');
                     modal.style.display = 'block';
                 }}
             }}
         }});
-
-       closeSpan.onclick = () => modal.style.display = 'none';
-        window.onclick = (event) => {{
-            if (event.target === modal) modal.style.display = 'none';
+        
+        // Close modal handlers
+        closeSpan.onclick = function() {{
+            modal.style.display = 'none';
+        }};
+        window.onclick = function(event) {{
+            if (event.target === modal) {{
+                modal.style.display = 'none';
+            }}
         }};
     </script>
 </body>
-</html>
-'''
+</html>'''
 
 # Show disclaimer only when filters are applied
 if st.session_state.applied_filters:
