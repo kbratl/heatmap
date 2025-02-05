@@ -248,20 +248,16 @@ html = f'''
         const closeSpan = document.getElementsByClassName('close')[0];
         
         // Click handler for cells
-      document.getElementById('matrixTable').addEventListener('click', function(event) {
-    // Ensure we always get the <td> element, even if clicking on a child element inside it
-    let target = event.target.closest("td"); 
-
-    if (target && target.classList.contains("highlighted")) {
-        const quotes = JSON.parse(target.getAttribute("data-quotes") || "[]");
-
-        if (quotes.length > 0) {
-            modalQuotes.innerHTML = quotes.map(quote => `<p>${quote}</p>`).join("");
-            modal.style.display = "block";
-        }
-    }
-});
-
+        document.getElementById('matrixTable').addEventListener('click', function(event) {{
+            const target = event.target;
+            if (target.tagName === 'TD' && target.classList.contains('highlighted')) {{
+                const quotes = JSON.parse(target.getAttribute('data-quotes'));
+                if (quotes && quotes.length > 0) {{
+                    modalQuotes.innerHTML = quotes.map(quote => <p>${{quote}}</p>).join('');
+                    modal.style.display = 'block';
+                }}
+            }}
+        }});
 
         
         // Close modal handlers
