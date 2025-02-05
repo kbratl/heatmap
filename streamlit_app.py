@@ -18,7 +18,7 @@ except Exception as e:
     st.stop()
 
 # Add percentages to the DataFrame
-percentages = {
+base_percentages = {
     "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
     "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},
     "Questioning Competence": {"Processes": 23, "Products": 13, "Tools": 6},
@@ -35,6 +35,26 @@ percentages = {
     "Multidisciplinary Coordination": {"Processes": 55, "Products": 11, "Tools": 20},
     "Flexibility as Threat vs Opportunity": {"Processes": 25, "Products": 11, "Tools": 11},
     "Immediate Profit vs Sustained Success": {"Processes": 20, "Products": 14, "Tools": 5},
+}
+
+# Add percentages to the DataFrame
+dynamic_percentages = {
+    "Pre-Contract Motivations": {"Processes": 32, "Products": 0, "Tools": 0 },
+    "Post-contract motivations": {"Processes": 0, "Products": 0, "Tools": 0},
+    "Questioning Competence": {"Processes": 0, "Products": 0, "Tools":0},
+    "Modeling and comparing competence": {"Processes": 0, "Products": 0, "Tools": 0},
+    "Interpretation Competence": {"Processes": 0, "Products": 5, "Tools": 0},
+    "Degree of Control in Management Practices": {"Processes": 0, "Products": 0, "Tools": 0},
+    "Leadership commitment to being flexible": {"Processes": 0, "Products": 10, "Tools": 0},
+    "Experimentation and learning": {"Processes": 0, "Products": 12, "Tools": 0},
+    "Defining Flexibility Related Project Objectives": {"Processes": 0, "Products": 0, "Tools": 25},
+    "Long-term Perspective": {"Processes": 0, "Products": 0, "Tools": 16},
+    "Buffers": {"Processes": 0, "Products": 0, "Tools":0},
+    "Slacks": {"Processes": 0, "Products": 0, "Tools":0},
+    "Supplier-Buyer Cooperation": {"Processes": 0, "Products": 0, "Tools":0},
+    "Multidisciplinary Coordination": {"Processes": 0, "Products": 0, "Tools":0},
+    "Flexibility as Threat vs Opportunity": {"Processes": 0, "Products": 0, "Tools":0},
+    "Immediate Profit vs Sustained Success": {"Processes": 0, "Products": 0, "Tools":0},
 }
 
 # Validate that all rows in percentages exist in the DataFrame
@@ -100,7 +120,18 @@ if apply_pressed:
     else:
         st.warning("Please select both a main filter and subfilter before applying")
         st.session_state.applied_filters = None
+        
+# Use dynamic percentages if the filter is rolesXconsultant
+if st.session_state.applied_filters == ("Roles", "Consultant"):
+    percentages = dynamic_percentages
+else:
+    percentages = base_percentages        
 
+# Add percentages to the DataFrame
+for row, cols in percentages.items():
+    for col, percent in cols.items():
+        df.at[row, col] = f"{percent}%|{df.at[row, col]}"
+        
 # Calculate highlighted cells based on applied filters
 filtered_quotes = {}
 highlighted_cells = []
@@ -188,9 +219,17 @@ html = f'''
             font-size: 0.9em;
             color: #555;
         }}
-        .heatmap-low {{ background-color: #d9f7be; }}
-        .heatmap-medium {{ background-color: #ffd591; }}
-        .heatmap-high {{ background-color: #ffa39e; }}
+        .heatmap-0 {{ background-color: #d9f7be; }}
+        .heatmap-1 {{ background-color: #b7eb8f; }}
+        .heatmap-2 {{ background-color: #95de64; }}
+        .heatmap-3 {{ background-color: #73d13d; }}
+        .heatmap-4 {{ background-color: #ffd591; }}
+        .heatmap-5 {{ background-color: #ffc069; }}
+        .heatmap-6 {{ background-color: #ffa940; }}
+        .heatmap-7 {{ background-color: #ff9c6e; }}
+        .heatmap-8 {{ background-color: #ff7a45; }}
+        .heatmap-9 {{ background-color: #ff4d4f; }}
+        .heatmap-10 {{ background-color: #cf1322; }}
     </style>
 </head>
 <body>
@@ -207,9 +246,8 @@ html = f'''
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
         function getHeatmapClass(percentage) {{
-            if (percentage <= 20) return 'heatmap-low';
-            if (percentage <= 50) return 'heatmap-medium';
-            return 'heatmap-high';
+            const level = Math.min(Math.floor(percentage / 10), 10);
+            return `heatmap-${{level}}`;
         }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
