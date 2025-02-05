@@ -111,10 +111,12 @@ if st.session_state.applied_filters:
     main_filter, subfilter = st.session_state.applied_filters
     
     for coord, data in cell_quotes.items():
-        if data["filters"].get(main_filter) and subfilter in data["filters"][main_filter]:
+        if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
             highlighted_cells.append(coord)
-            filtered_quotes[coord] = data  # Ensure filtered quotes are passed to JavaScript
+            filtered_quotes[coord] = data  # Store filtered quotes correctly
 
+st.write("Highlighted Cells:", highlighted_cells)
+st.write("Filtered Quotes:", filtered_quotes)
 
 # Prepare data for HTML component
 matrix_data = {
