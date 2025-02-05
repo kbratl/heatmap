@@ -246,7 +246,7 @@ html = f'''
                 hue = 60 - ((percentage - 50) * 1.2);
             }}
             
-            let lightness = 80 - (percentage * 0.5);  // Higher percentage = Darker
+            let lightness = 70 - (percentage * 0.4);  // Higher percentage = Darker
             return "hsl(" + hue + ", 100%, " + lightness + "%)";
         }}
         function buildMatrix() {{
