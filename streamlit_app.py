@@ -102,6 +102,7 @@ if apply_pressed:
         st.session_state.applied_filters = None
 
 # Calculate highlighted cells based on applied filters
+filtered_quotes = {}
 highlighted_cells = []
 if st.session_state.applied_filters:
     main_filter, subfilter = st.session_state.applied_filters
