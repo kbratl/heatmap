@@ -112,9 +112,7 @@ if st.session_state.applied_filters:
             highlighted_cells.append(coord)
             filtered_quotes[coord] = data  # Store filtered quotes correctly
 
-# Debugging: Print highlighted cells and filtered quotes
-st.write("Highlighted Cells:", highlighted_cells)
-st.write("Filtered Quotes:", filtered_quotes)
+
 
 # Prepare data for HTML component
 matrix_data = {
