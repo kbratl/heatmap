@@ -188,9 +188,10 @@ html = f'''
             font-size: 0.9em;
             color: #555;
         }}
-        .heatmap-low {{ background-color: #d9f7be; }}
-        .heatmap-medium {{ background-color: #ffd591; }}
-        .heatmap-high {{ background-color: #ffa39e; }}
+        /* Excel-like heatmap colors */
+        .heatmap-low {{ background-color: #63be7b; }}  /* Green for low values */
+        .heatmap-medium {{ background-color: #ffeb84; }}  /* Yellow for medium values */
+        .heatmap-high {{ background-color: #f8696b; }}  /* Red for high values */
     </style>
 </head>
 <body>
