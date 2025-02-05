@@ -330,34 +330,33 @@ html = f'''
             }});
         }}
 
-        // Initialize matrix and modal handlers
+       // Initialize matrix and modal handlers
         buildMatrix();
-        const modal = document.getElementById('quoteModal');
-        // Modal handling code
         const modal = document.getElementById('quoteModal');
         const modalQuotes = document.getElementById('modalQuotes');
         const closeSpan = document.getElementsByClassName('close')[0];
 
-        document.getElementById('matrixTable').addEventListener('click', function(event) {
+        document.getElementById('matrixTable').addEventListener('click', function(event) {{
             const cell = event.target.closest('td.highlighted');
-            if (cell) {
+            if (cell) {{
                 const quotes = JSON.parse(cell.getAttribute('data-quotes'));
-                if (quotes?.length) {
+                if (quotes && quotes.length) {{
                     modalQuotes.innerHTML = quotes.map(quote => 
-                        `<p>${quote}</p>`
+                        `<p>${{quote}}</p>`
                     ).join('');
                     modal.style.display = 'block';
-                }
-            }
-        });
+                }}
+            }}
+        }});
 
-        closeSpan.onclick = () => modal.style.display = 'none';
-        window.onclick = (event) => {
+       closeSpan.onclick = () => modal.style.display = 'none';
+        window.onclick = (event) => {{
             if (event.target === modal) modal.style.display = 'none';
-        };
+        }};
     </script>
 </body>
-</html>'''
+</html>
+'''
 
 # Show disclaimer only when filters are applied
 if st.session_state.applied_filters:
