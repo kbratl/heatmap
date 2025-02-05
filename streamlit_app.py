@@ -237,7 +237,7 @@ html = f'''
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
         function getHeatmapColor(percentage) {{
-            let hue;
+            let hue, lightness;
             if (percentage <= 50) {{
                 // Green (120) to Yellow (60) for low to medium values
                 hue = 120 - (percentage * 1.2);
@@ -246,8 +246,8 @@ html = f'''
                 hue = 60 - ((percentage - 50) * 1.2);
             }}
             
-            let lightness = 90 - (percentage * 0.6);  // Higher percentage = Darker
-            return "hsl(" + hue + ", 100%, " + lightness + "%)";
+            lightness = 100 - (percentage * 0.7);  // Higher percentage = Darker
+            return "hsl(" + hue + ", 80%, " + lightness + "%)";
         }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
