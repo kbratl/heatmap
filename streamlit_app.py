@@ -237,8 +237,14 @@ html = f'''
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
         function getHeatmapColor(percentage) {{
-            const hue = 120 - (percentage * 1.2);
-            return `hsl(${{hue}}, 100%, 65%)`;
+            let hue;
+            if (percentange < 50) {
+            hue = 120 - (percentange * 2.4);
+                } else {
+                    hue = 60 - ((percentage - 50) * 1.2.);
+                    }
+                    return `hsl(${hue}, 100%, 60%)`;
+                    }
         }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
