@@ -17,15 +17,7 @@ except Exception as e:
     st.error(f"Error loading Excel file: {e}")
     st.stop()
 
-# Modified percentages for rolesxconsultant
-dynamic_percentages = {
-    "0,0": {"value": 32, "filters": {"Roles": ["Consultant"]}},
-    "4,1": {"value": 5, "filters": {"Roles": ["Consultant"]}},
-    "6,1": {"value": 10, "filters": {"Roles": ["Consultant"]}},
-    "7,1": {"value": 12, "filters": {"Roles": ["Consultant"]}},
-    "9,2": {"value": 25, "filters": {"Roles": ["Consultant"]}},
-    "8,2": {"value": 16, "filters": {"Roles": ["Consultant"]}},
-}
+
 # Add percentages to the DataFrame
 base_percentages = {
     "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
@@ -46,18 +38,27 @@ base_percentages = {
     "Immediate Profit vs Sustained Success": {"Processes": 20, "Products": 14, "Tools": 5},
 }
 
+# Modified percentages for rolesxconsultant
+dynamic_percentages = {
+    "0,0": {"value": 32, "filters": {"Roles": ["Consultant"]}},
+    "4,1": {"value": 5, "filters": {"Roles": ["Consultant"]}},
+    "6,1": {"value": 10, "filters": {"Roles": ["Consultant"]}},
+    "7,1": {"value": 12, "filters": {"Roles": ["Consultant"]}},
+    "9,2": {"value": 25, "filters": {"Roles": ["Consultant"]}},
+    "8,2": {"value": 16, "filters": {"Roles": ["Consultant"]}},
+}
 
-
-# Validate that all rows in percentages exist in the DataFrame
-missing_percentage_rows = [row for row in percentages.keys() if row not in row_names]
-if missing_percentage_rows:
-    st.error(f"Error: The following rows in the 'percentages' dictionary do not exist in the Excel file: {missing_percentage_rows}")
-    st.stop()
-
-# Add percentages to the DataFrame
-for row, cols in percentages.items():
+# Initialize DataFrame with base percentages
+for row, cols in base_percentages.items():
     for col, percent in cols.items():
         df.at[row, col] = f"{percent}%|{df.at[row, col]}"
+
+# Validate base percentages
+missing_percentage_rows = [row for row in base_percentages.keys() if row not in row_names]
+if missing_percentage_rows:
+    st.error(f"Missing rows in Excel: {missing_percentage_rows}")
+    st.stop()
+
 
 # Build definitions dictionary
 definitions = {
@@ -124,7 +125,7 @@ if st.session_state.applied_filters:
             highlighted_cells.append(coord)
             filtered_quotes[coord] = data  # Store filtered quotes correctly
 
-# Calculate dynamic percentages when filters are applied
+# Apply dynamic percentages after filter application
 if st.session_state.applied_filters:
     main_filter, subfilter = st.session_state.applied_filters
     
@@ -134,7 +135,14 @@ if st.session_state.applied_filters:
             row_idx, col_idx = map(int, coord.split(','))
             row_name = row_names[row_idx]
             col_name = column_names[col_idx]
-            df.at[row_name, col_name] = f"{data['value']}%|{df.at[row_name, col_name].split('|')[1]}"
+            current_content = df.at[row_name, col_name].split('|')
+            df.at[row_name, col_name] = f"{data['value']}%|{current_content[1]}"
+
+# Rebuild definitions with updated percentages
+definitions = {
+    row: {col: str(df.at[row, col]) for col in column_names}
+    for row in row_names
+}
 
 # Prepare data for HTML component
 matrix_data = {
@@ -168,28 +176,34 @@ html = f'''
         .highlighted { border: 2px solid #2196f3 !important; cursor: pointer; }
         
         /* Percentage styling */
-        .percentage {
+       .percentage {{
             font-weight: bold;
             margin-bottom: 5px;
             padding: 3px;
             border-radius: 4px;
             width: fit-content;
             background: rgba(255, 255, 255, 0.3);
-        }
-        
-        /* Enhanced color shades */
-        .heatmap-0 { background-color: #e6f7ff; }
-        .heatmap-1 { background-color: #b3e6ff; }
-        .heatmap-2 { background-color: #80d4ff; }
-        .heatmap-3 { background-color: #4dc3ff; }
-        .heatmap-4 { background-color: #1ab2ff; }
-        .heatmap-5 { background-color: #0099e6; }
-        .heatmap-6 { background-color: #0080cc; }
-        .heatmap-7 { background-color: #0066b3; }
-        .heatmap-8 { background-color: #004d99; }
-        .heatmap-9 { background-color: #003366; }
+        }}
+        .cell-content {{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 80px;
+        }}
+        /* Modern gradient heatmap colors */
+        .heatmap-0 {{ background-color: #ffd6e7; }}
+        .heatmap-1 {{ background-color: #ffbfd3; }}
+        .heatmap-2 {{ background-color: #ffa8bf; }}
+        .heatmap-3 {{ background-color: #ff91ab; }}
+        .heatmap-4 {{ background-color: #ff7a97; }}
+        .heatmap-5 {{ background-color: #ff6383; }}
+        .heatmap-6 {{ background-color: #ff4c6f; }}
+        .heatmap-7 {{ background-color: #ff355b; }}
+        .heatmap-8 {{ background-color: #ff1e47; }}
+        .heatmap-9 {{ background-color: #ff0733; }}
 
-        /* Modal styles */
+     
           /* Modal styles */
         .modal {{
             display: none;
@@ -260,36 +274,21 @@ html = f'''
         </div>
     </div>
     <script>
-        function getHeatmapColor(percentage) {
-            // Create color spectrum from light blue to dark blue with purple shades
-            const colorStops = [
-                '#e6f7ff', '#b3e6ff', '#80d4ff', '#4dc3ff',
-                '#1ab2ff', '#0099e6', '#0080cc', '#0066b3',
-                '#004d99', '#003366'
+      function getHeatmapColor(percentage) {{
+            const pinkShades = [
+                '#ffd6e7', '#ffbfd3', '#ffa8bf', '#ff91ab',
+                '#ff7a97', '#ff6383', '#ff4c6f', '#ff355b',
+                '#ff1e47', '#ff0733'
             ];
-            
-            const index = Math.min(
-                Math.floor(percentage / 10),
-                colorStops.length - 1
-            );
-            
-            return colorStops[index];
-        }
-            
-            const index = Math.min(
-                Math.floor(percentage / 10),
-                colorStops.length - 1
-            );
-            
-            return colorStops[index];
-        }
+            return pinkShades[Math.min(Math.floor(percentage/10), 9)];
+        }}
     </script>
 
     <div class="matrix-wrapper">
         <table id="matrixTable"></table>
     </div>
 
-    <!-- Modal Structure -->
+   <!-- Single modal structure -->
     <div id="quoteModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -300,47 +299,40 @@ html = f'''
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
         
-        function buildMatrix() {
+        function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
             
             // Header row
-            let headerRow = '<tr><th>Factors</th>';
-            data.column_names.forEach(col => {
-                headerRow += `<th>${col}</th>`;
-            });
-            headerRow += '</tr>';
-            table.innerHTML = headerRow;
+           let headerRow = '<tr><th>Factors</th>';
+            data.column_names.forEach(col => headerRow += `<th>${{col}}</th>`);
+            table.innerHTML = headerRow + '</tr>';
 
-            // Data rows
-            data.row_names.forEach((rowName, rowIndex) => {
-                let rowHtml = `<tr><td>${rowName}</td>`;
-                data.column_names.forEach((colName, colIndex) => {
-                    const coord = `${rowIndex},${colIndex}`;
-                    const content = data.definitions[rowName][colName];
-                    const [percentage, explanation] = content.split('|');
-                    const percentValue = parseFloat(percentage);
-                    const color = getHeatmapColor(percentValue);
-                    const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = data.cell_quotes[coord]?.quotes || [];
-
+            // Build rows
+            data.row_names.forEach((rowName, rowIndex) => {{
+                let rowHtml = `<tr><td>${{rowName}}</td>`;
+                data.column_names.forEach((colName, colIndex) => {{
+                    const coord = `${{rowIndex}},${{colIndex}}`;
+                    const [percentage, explanation] = data.definitions[rowName][colName].split('|');
+                    const color = getHeatmapColor(parseFloat(percentage));
+                    
                     rowHtml += `
-                        <td class="${isHighlighted ? 'highlighted' : ''}" 
-                            style="background-color: ${color}"
-                            data-quotes='${JSON.stringify(quotes)}'>
+                        <td class="${{data.highlighted_cells.includes(coord) ? 'highlighted' : ''}}"
+                            style="background-color: ${{color}}"
+                            data-quotes='${{JSON.stringify(data.cell_quotes[coord]?.quotes || [])}}'>
                             <div class="cell-content">
-                                <div class="percentage">${percentage}</div>
-                                <div class="explanation">${explanation}</div>
+                                <div class="percentage">${{percentage}}</div>
+                                <div class="explanation">${{explanation}}</div>
                             </div>
                         </td>`;
-                });
-                rowHtml += '</tr>';
-                table.innerHTML += rowHtml;
-            });
-        }
+                }});
+                table.innerHTML += rowHtml + '</tr>';
+            }});
+        }}
 
+        // Initialize matrix and modal handlers
         buildMatrix();
-
+        const modal = document.getElementById('quoteModal');
         // Modal handling code
         const modal = document.getElementById('quoteModal');
         const modalQuotes = document.getElementById('modalQuotes');
