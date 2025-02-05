@@ -190,12 +190,75 @@ html = f'''
         .heatmap-9 { background-color: #003366; }
 
         /* Modal styles */
-        .modal { /* Keep existing modal styles */ }
-        .modal-content { /* Keep existing modal styles */ }
-        .close { /* Keep existing close button styles */ }
+          /* Modal styles */
+        .modal {{
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }}
+        .modal-content {{
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+        }}
+        .close {{
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }}
+        .close:hover,
+        .close:focus {{
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }}
+        #modalQuotes p {{
+            margin: 10px 0;
+            padding: 5px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }}
+        .cell-content {{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }}
+        .percentage {{
+            font-weight: bold;
+            margin-bottom: 5px;
+        }}
+        .explanation {{
+            font-size: 0.9em;
+            color: #555;
+        }}
+        .heatmap-low {{ background-color: #d9f7be; }}
+        .heatmap-medium {{ background-color: #ffd591; }}
+        .heatmap-high {{ background-color: #ffa39e; }}
     </style>
 </head>
 <body>
+    <div class="matrix-wrapper">
+        <table id="matrixTable"></table>
+    </div>
+    <!-- Modal Structure -->
+    <div id="quoteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalQuotes"></div>
+        </div>
+    </div>
     <script>
         function getHeatmapColor(percentage) {
             // Create color spectrum from light blue to dark blue with purple shades
