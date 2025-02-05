@@ -264,13 +264,31 @@ html = f'''
                     document.getElementById('modalQuotes').innerHTML = 
                         quotes.map(quote => `<p>${{quote}}</p>`).join('');
                     document.getElementById('quoteModal').style.display = 'block';
+  // Click handler for cells (FIXED VERSION)
+        document.getElementById('matrixTable').addEventListener('click', function(event) {{
+            // Find the closest parent cell element
+            const cell = event.target.closest('td.highlighted');
+            if (cell) {{
+                const quotes = JSON.parse(cell.getAttribute('data-quotes'));
+                if (quotes && quotes.length > 0) {{
+                    modalQuotes.innerHTML = quotes.map(quote => `<p>${{quote}}</p>`).join('');
+                    modal.style.display = 'block';
                 }}
             }}
         }});
+        
+        // Close modal handlers
+        closeSpan.onclick = function() {{
+            modal.style.display = 'none';
+        }};
+        window.onclick = function(event) {{
+            if (event.target === modal) {{
+                modal.style.display = 'none';
+            }}
+        }};
     </script>
 </body>
 </html>'''
-
 
 if st.session_state.applied_filters:
     st.info("ℹ️ Please click on the highlighted cells to view the corresponding quotes")
