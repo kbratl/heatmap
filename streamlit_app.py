@@ -243,11 +243,14 @@ html = f'''
                 hue = 120 - (percentage * 1.2);
             }} else {{
                 // Yellow (60) to Red (0) for medium to high values
-                hue = 60 - ((percentage - 50) * 1.2);
+                hue = 60 - ((percentage - 50) * 2.4);
             }}
             
-            lightness = 85 - (percentage * 0.7);  // Higher percentage = Darker
-            return "hsl(" + hue + ", 90%, " + lightness + "%)";
+            lightness = 85 - (percentage * 0.75);  // Higher percentage = Darker
+            // Ensure higher saturation for deeper reds
+            saturation = 95 - (percentage * 0.3); 
+            
+            return "hsl(" + hue + saturation + lightness + "%)";
         }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
