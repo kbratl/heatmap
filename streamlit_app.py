@@ -17,7 +17,7 @@ except Exception as e:
     st.error(f"Error loading Excel file: {e}")
     st.stop()
 
-# Add percentages to the DataFrame
+# Base percentages
 base_percentages = {
     "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
     "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},
@@ -37,41 +37,14 @@ base_percentages = {
     "Immediate Profit vs Sustained Success": {"Processes": 20, "Products": 14, "Tools": 5},
 }
 
-# Add percentages to the DataFrame
+# Dynamic percentages for rolesXconsultant combo
 dynamic_percentages = {
-    "Pre-Contract Motivations": {"Processes": 32, "Products": 0, "Tools": 0 },
-    "Post-contract motivations": {"Processes": 0, "Products": 0, "Tools": 0},
-    "Questioning Competence": {"Processes": 0, "Products": 0, "Tools":0},
-    "Modeling and comparing competence": {"Processes": 0, "Products": 0, "Tools": 0},
+    "Pre-Contract Motivations": {"Processes": 32, "Products": 0, "Tools": 0},
     "Interpretation Competence": {"Processes": 0, "Products": 5, "Tools": 0},
-    "Degree of Control in Management Practices": {"Processes": 0, "Products": 0, "Tools": 0},
     "Leadership commitment to being flexible": {"Processes": 0, "Products": 10, "Tools": 0},
     "Experimentation and learning": {"Processes": 0, "Products": 12, "Tools": 0},
     "Defining Flexibility Related Project Objectives": {"Processes": 0, "Products": 0, "Tools": 25},
     "Long-term Perspective": {"Processes": 0, "Products": 0, "Tools": 16},
-    "Buffers": {"Processes": 0, "Products": 0, "Tools":0},
-    "Slacks": {"Processes": 0, "Products": 0, "Tools":0},
-    "Supplier-Buyer Cooperation": {"Processes": 0, "Products": 0, "Tools":0},
-    "Multidisciplinary Coordination": {"Processes": 0, "Products": 0, "Tools":0},
-    "Flexibility as Threat vs Opportunity": {"Processes": 0, "Products": 0, "Tools":0},
-    "Immediate Profit vs Sustained Success": {"Processes": 0, "Products": 0, "Tools":0},
-}
-
-# Validate that all rows in percentages exist in the DataFrame
-missing_percentage_rows = [row for row in percentages.keys() if row not in row_names]
-if missing_percentage_rows:
-    st.error(f"Error: The following rows in the 'percentages' dictionary do not exist in the Excel file: {missing_percentage_rows}")
-    st.stop()
-
-# Add percentages to the DataFrame
-for row, cols in percentages.items():
-    for col, percent in cols.items():
-        df.at[row, col] = f"{percent}%|{df.at[row, col]}"
-
-# Build definitions dictionary
-definitions = {
-    row: {col: str(df.at[row, col]) for col in column_names}
-    for row in row_names
 }
 
 # Configure filters
@@ -120,38 +93,34 @@ if apply_pressed:
     else:
         st.warning("Please select both a main filter and subfilter before applying")
         st.session_state.applied_filters = None
-        
+
 # Use dynamic percentages if the filter is rolesXconsultant
 if st.session_state.applied_filters == ("Roles", "Consultant"):
     percentages = dynamic_percentages
 else:
-    percentages = base_percentages        
+    percentages = base_percentages
 
 # Add percentages to the DataFrame
 for row, cols in percentages.items():
     for col, percent in cols.items():
         df.at[row, col] = f"{percent}%|{df.at[row, col]}"
-        
+
 # Calculate highlighted cells based on applied filters
-filtered_quotes = {}
 highlighted_cells = []
+filtered_quotes = {}
 if st.session_state.applied_filters:
-    main_filter, subfilter = st.session_state.applied_filters
-    
     for coord, data in cell_quotes.items():
-        if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
+        if st.session_state.applied_filters[0] in data["filters"] and st.session_state.applied_filters[1] in data["filters"][st.session_state.applied_filters[0]]:
             highlighted_cells.append(coord)
-            filtered_quotes[coord] = data  # Store filtered quotes correctly
-
-
+            filtered_quotes[coord] = data["quotes"]
 
 # Prepare data for HTML component
 matrix_data = {
     "column_names": column_names,
     "row_names": row_names,
-    "definitions": definitions,
-    "cell_quotes": filtered_quotes,  # Pass only relevant quotes
+    "definitions": {row: {col: str(df.at[row, col]) for col in column_names} for row in row_names},
     "highlighted_cells": highlighted_cells,
+    "cell_quotes": filtered_quotes,
 }
 
 # HTML/JavaScript component
@@ -265,7 +234,7 @@ html = f'''
                     const percentValue = parseFloat(percentage);
                     const heatmapClass = getHeatmapClass(percentValue);
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes) ? data.cell_quotes[coord].quotes : [];
+                    const quotes = data.cell_quotes[coord] || [];
                     rowHtml += `
                         <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
                             <div class="cell-content">
@@ -276,7 +245,7 @@ html = f'''
                 }});
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
-            }});
+            }};
         }}
         buildMatrix();
         
@@ -285,9 +254,8 @@ html = f'''
         const modalQuotes = document.getElementById('modalQuotes');
         const closeSpan = document.getElementsByClassName('close')[0];
         
-         // Click handler for cells (FIXED VERSION)
+        // Click handler for cells
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
-            // Find the closest parent cell element
             const cell = event.target.closest('td.highlighted');
             if (cell) {{
                 const quotes = JSON.parse(cell.getAttribute('data-quotes'));
