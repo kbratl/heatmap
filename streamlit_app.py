@@ -190,7 +190,44 @@ html = f'''
             color: white;
         }}
         .explanation {{ font-size: 0.9em; color: #555; }}
-     <!-- Modal Structure -->
+        /* Modal Styles */
+        .modal {{
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }}
+        .modal-content {{
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }}
+        .close {{
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }}
+        .close:hover,
+        .close:focus {{
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }}
+    </style>
+</head>
+<body>
+    <div class="matrix-wrapper">
+        <table id="matrixTable"></table>
+    </div>
+    <!-- Modal Structure -->
     <div id="quoteModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -199,8 +236,7 @@ html = f'''
     </div>
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-         function getHeatmapColor(percentage) {{
-            // Red (0%) to Green (100%) gradient
+        function getHeatmapColor(percentage) {{
             const hue = percentage * 1.2;
             return `hsl(${{hue}}, 100%, 50%)`;
         }}
@@ -208,13 +244,13 @@ html = f'''
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
             
-            //Build headers
+            // Build headers
             let headerRow = '<tr><th>Factors</th>';
             data.column_names.forEach(col => headerRow += `<th>${{col}}</th>`);
             headerRow += '</tr>';
             table.innerHTML = headerRow;
             
-          // Build body
+            // Build body
             data.row_names.forEach((rowName, rowIndex) => {{
                 let rowHtml = `<tr><td>${{rowName}}</td>`;
                 data.column_names.forEach((colName, colIndex) => {{
@@ -223,11 +259,9 @@ html = f'''
                     const [percentage, explanation] = content.split('|');
                     const isHighlighted = data.highlighted_cells.includes(coord);
                     
-                   // Get percentage value or null
                     const hasPercentage = percentage !== '';
                     const percentValue = hasPercentage ? parseFloat(percentage) : null;
                     
-                    // Create percentage display
                     let percentageDisplay = '';
                     if (hasPercentage) {{
                         const color = getHeatmapColor(percentValue);
@@ -237,7 +271,6 @@ html = f'''
                             </div>`;
                     }}
                     
-                    // Get quotes
                     const quotes = data.cell_quotes[coord] || [];
                     
                     rowHtml += `
@@ -256,17 +289,11 @@ html = f'''
         buildMatrix();
         
         // Modal handling
+        const modal = document.getElementById('quoteModal');
+        const modalQuotes = document.getElementById('modalQuotes');
+        const closeSpan = document.getElementsByClassName('close')[0];
+        
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
-            const cell = event.target.closest('td.highlighted');
-            if (cell) {{
-                const quotes = JSON.parse(cell.getAttribute('data-quotes'));
-                if (quotes && quotes.length > 0) {{
-                    document.getElementById('modalQuotes').innerHTML = 
-                        quotes.map(quote => `<p>${{quote}}</p>`).join('');
-                    document.getElementById('quoteModal').style.display = 'block';
-  // Click handler for cells (FIXED VERSION)
-        document.getElementById('matrixTable').addEventListener('click', function(event) {{
-            // Find the closest parent cell element
             const cell = event.target.closest('td.highlighted');
             if (cell) {{
                 const quotes = JSON.parse(cell.getAttribute('data-quotes'));
@@ -277,10 +304,10 @@ html = f'''
             }}
         }});
         
-        // Close modal handlers
         closeSpan.onclick = function() {{
             modal.style.display = 'none';
         }};
+        
         window.onclick = function(event) {{
             if (event.target === modal) {{
                 modal.style.display = 'none';
@@ -288,7 +315,8 @@ html = f'''
         }};
     </script>
 </body>
-</html>'''
+</html>
+'''
 
 if st.session_state.applied_filters:
     st.info("ℹ️ Please click on the highlighted cells to view the corresponding quotes")
