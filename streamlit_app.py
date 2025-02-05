@@ -17,33 +17,6 @@ except Exception as e:
     st.error(f"Error loading Excel file: {e}")
     st.stop()
 
-# Add percentages to the DataFrame
-percentages = {
-    "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
-    "Post-Contract Motivations": {"Processes": 50, "Products": 11, "Tools": 6},
-    "Questioning Competence": {"Processes": 23, "Products": 13, "Tools": 6},
-    "Modeling and Comparing Competence": {"Processes": 25, "Products": 6, "Tools": 27},
-    "Interpretation Competence": {"Processes": 27, "Products": 9, "Tools": 8},
-    "Degree of Control in Management Practices": {"Processes": 33, "Products": 8, "Tools": 9},
-    "Leadership Commitment to Being Flexible": {"Processes": 42, "Products": 13, "Tools": 13},
-    "Experimentation and Learning": {"Processes": 9, "Products": 14, "Tools": 13},
-    "Defining Flexibility Related Project Objectives": {"Processes": 19, "Products": 8, "Tools": 8},
-    "Long-term Perspective": {"Processes": 13, "Products": 11, "Tools": 9},
-    "Buffers": {"Processes": 25, "Products": 5, "Tools": 6},
-    "Slack": {"Processes": 11, "Products": 9, "Tools": 0},
-    "Supplier-Buyer Cooperation": {"Processes": 25, "Products": 19, "Tools": 13},
-    "Multidisciplinary Coordination": {"Processes": 55, "Products": 11, "Tools": 20},
-    "Flexibility as Threat vs Opportunity": {"Processes": 25, "Products": 11, "Tools": 11},
-    "Immediate Profit vs Sustained Success": {"Processes": 20, "Products": 14, "Tools": 5},
-}
-
-# Update DataFrame safely
-for row, cols in percentages.items():
-    if row in df.index:  # Prevent KeyError
-        for col, percent in cols.items():
-            if col in df.columns:  # Ensure column exists
-                df.at[row, col] = f"{percent}%|{df.at[row, col]}"
-
 # Build definitions dictionary
 definitions = {
     row: {col: str(df.at[row, col]) for col in column_names}
@@ -166,23 +139,6 @@ html = f'''
             background: #f8f9fa;
             border-radius: 4px;
         }}
-        .cell-content {{
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }}
-        .percentage {{
-            font-weight: bold;
-            margin-bottom: 5px;
-        }}
-        .explanation {{
-            font-size: 0.9em;
-            color: #555;
-        }}
-        .heatmap-low {{ background-color: #d9f7be; }}
-        .heatmap-medium {{ background-color: #ffd591; }}
-        .heatmap-high {{ background-color: #ffa39e; }}
     </style>
 </head>
 <body>
@@ -198,35 +154,21 @@ html = f'''
     </div>
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-        function getHeatmapClass(percentage) {{
-            if (percentage <= 20) return 'heatmap-low';
-            if (percentage <= 50) return 'heatmap-medium';
-            return 'heatmap-high';
-        }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
             let headerRow = '<tr><th>Factors</th>';
-            data.column_names.forEach(col => {{ headerRow += `<th>${{col}}</th>`; }});
+            data.column_names.forEach(col => {{ headerRow += <th>${{col}}</th>; }});
             headerRow += '</tr>';
             table.innerHTML = headerRow;
             data.row_names.forEach((rowName, rowIndex) => {{
-                let rowHtml = `<tr><td>${{rowName}}</td>`;
+                let rowHtml = <tr><td>${{rowName}}</td>;
                 data.column_names.forEach((colName, colIndex) => {{
-                    const coord = `${{rowIndex}},${{colIndex}}`;
+                    const coord = ${{rowIndex}},${{colIndex}};
                     const content = data.definitions[rowName][colName];
-                    const [percentage, explanation] = content.split('|');
-                    const percentValue = parseFloat(percentage);
-                    const heatmapClass = getHeatmapClass(percentValue);
                     const isHighlighted = data.highlighted_cells.includes(coord);
                     const quotes = data.cell_quotes[coord]?.quotes || [];
-                    rowHtml += `
-                        <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
-                            <div class="cell-content">
-                                <div class="percentage ${{heatmapClass}}">${{percentage}}</div>
-                                <div class="explanation">${{explanation}}</div>
-                            </div>
-                        </td>`;
+                    rowHtml += <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>${{content}}</td>;
                 }});
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
@@ -245,7 +187,7 @@ html = f'''
             if (target.tagName === 'TD' && target.classList.contains('highlighted')) {{
                 const quotes = JSON.parse(target.getAttribute('data-quotes'));
                 if (quotes && quotes.length > 0) {{
-                    modalQuotes.innerHTML = quotes.map(quote => `<p>${{quote}}</p>`).join('');
+                    modalQuotes.innerHTML = quotes.map(quote => <p>${{quote}}</p>).join('');
                     modal.style.display = 'block';
                 }}
             }}
@@ -269,3 +211,5 @@ if st.session_state.applied_filters:
 
 # Render the component
 st.components.v1.html(html, height=800, scrolling=True)
+
+
