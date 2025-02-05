@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
 import json
 
@@ -129,14 +129,14 @@ html = f'''
 <html>
 <head>
     <style>
-       .matrix-wrapper {{ overflow: auto; }}
+        .matrix-wrapper {{ overflow: auto; }}
         table {{ border-collapse: collapse; width: 100%; }}
         th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
         th {{ background: #f8f9fa; position: sticky; top: 0; }}
-       .highlighted {{ background: #e3f2fd!important; border: 2px solid #2196f3!important; cursor: pointer; }}
+        .highlighted {{ background: #e3f2fd !important; border: 2px solid #2196f3 !important; cursor: pointer; }}
         
         /* Modal styles */
-       .modal {{
+        .modal {{
             display: none;
             position: fixed;
             z-index: 1000;
@@ -147,7 +147,7 @@ html = f'''
             overflow: auto;
             background-color: rgba(0,0,0,0.4);
         }}
-       .modal-content {{
+        .modal-content {{
             background-color: #fefefe;
             margin: 15% auto;
             padding: 20px;
@@ -156,14 +156,14 @@ html = f'''
             max-width: 600px;
             position: relative;
         }}
-       .close {{
+        .close {{
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
         }}
-       .close:hover,
-       .close:focus {{
+        .close:hover,
+        .close:focus {{
             color: black;
             text-decoration: none;
             cursor: pointer;
@@ -174,20 +174,23 @@ html = f'''
             background: #f8f9fa;
             border-radius: 4px;
         }}
-       .cell-content {{
+        .cell-content {{
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
         }}
-       .percentage {{
+        .percentage {{
             font-weight: bold;
             margin-bottom: 5px;
         }}
-       .explanation {{
+        .explanation {{
             font-size: 0.9em;
             color: #555;
         }}
+        .heatmap-low {{ background-color: #d9f7be; }}
+        .heatmap-medium {{ background-color: #ffd591; }}
+        .heatmap-high {{ background-color: #ffa39e; }}
     </style>
 </head>
 <body>
@@ -202,22 +205,12 @@ html = f'''
         </div>
     </div>
     <script>
+        const data = {json.dumps(matrix_data, ensure_ascii=False)};
         function getHeatmapClass(percentage) {{
             if (percentage <= 20) return 'heatmap-low';
             if (percentage <= 50) return 'heatmap-medium';
             return 'heatmap-high';
         }}
-        
-        function getFilteredPercentage(percentage) {{
-            // This function calculates the filtered percentage based on the applied filters
-            // For simplicity, let's assume we're filtering by roles
-            const appliedFilters = st.session_state.applied_filters;
-            if (appliedFilters && appliedFilters[1] === 'Consultant') {{
-                return percentage;
-            }}
-            return 0; // or any other default value
-        }}
-        
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
@@ -230,16 +223,15 @@ html = f'''
                 data.column_names.forEach((colName, colIndex) => {{
                     const coord = `${{rowIndex}},${{colIndex}}`;
                     const content = data.definitions[rowName][colName];
-                    const [originalPercentage, explanation] = content.split('|');
-                    const originalPercentValue = parseFloat(originalPercentage);
-                    const filteredPercentValue = getFilteredPercentage(originalPercentValue);
-                    const heatmapClass = getHeatmapClass(filteredPercentValue);
+                    const [percentage, explanation] = content.split('|');
+                    const percentValue = parseFloat(percentage);
+                    const heatmapClass = getHeatmapClass(percentValue);
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes)? data.cell_quotes[coord].quotes : [];
+                    const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes) ? data.cell_quotes[coord].quotes : [];
                     rowHtml += `
-                        <td class="${{isHighlighted? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
+                        <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
                             <div class="cell-content">
-                                <div class="percentage ${{heatmapClass}}">${{filteredPercentValue}}%</div>
+                                <div class="percentage ${{heatmapClass}}">${{percentage}}</div>
                                 <div class="explanation">${{explanation}}</div>
                             </div>
                         </td>`;
@@ -248,7 +240,6 @@ html = f'''
                 table.innerHTML += rowHtml;
             }});
         }}
-        
         buildMatrix();
         
         // Modal handling
@@ -256,7 +247,7 @@ html = f'''
         const modalQuotes = document.getElementById('modalQuotes');
         const closeSpan = document.getElementsByClassName('close')[0];
         
-        // Click handler for cells
+         // Click handler for cells (FIXED VERSION)
         document.getElementById('matrixTable').addEventListener('click', function(event) {{
             // Find the closest parent cell element
             const cell = event.target.closest('td.highlighted');
