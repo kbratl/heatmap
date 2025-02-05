@@ -14,11 +14,6 @@ try:
     row_names = df.index.tolist()  # Get row names as a list
     column_names = df.columns.tolist()  # Get column names as a list
 
-    # Debugging: Show loaded data
-    st.write("Loaded DataFrame Preview:")
-    st.dataframe(df)
-    st.write("Row names in Excel:", row_names)
-    st.write("Column names in Excel:", column_names)
 
 except Exception as e:
     st.error(f"Error loading Excel file: {e}")
