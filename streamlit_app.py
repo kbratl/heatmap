@@ -275,6 +275,14 @@ html = f'''
             
             return colorStops[index];
         }
+            
+            const index = Math.min(
+                Math.floor(percentage / 10),
+                colorStops.length - 1
+            );
+            
+            return colorStops[index];
+        }
     </script>
 
     <div class="matrix-wrapper">
