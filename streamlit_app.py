@@ -13,8 +13,6 @@ try:
     df.columns = ['Processes', 'Products', 'Tools']  # Rename columns
     row_names = df.index.tolist()  # Get row names as a list
     column_names = df.columns.tolist()  # Get column names as a list
-
-
 except Exception as e:
     st.error(f"Error loading Excel file: {e}")
     st.stop()
@@ -115,8 +113,6 @@ if st.session_state.applied_filters:
             highlighted_cells.append(coord)
             filtered_quotes[coord] = data  # Store filtered quotes correctly
 
-st.write("Highlighted Cells:", highlighted_cells)
-st.write("Filtered Quotes:", filtered_quotes)
 
 # Prepare data for HTML component
 matrix_data = {
