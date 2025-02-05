@@ -8,17 +8,19 @@ st.set_page_config(layout="wide")
 # Load and prepare data
 file_path = "matrix explained.xlsx"
 try:
-    df = pd.read_excel(file_path, index_col=0)
-    df.index = df.index.str.strip()  # Remove any extra spaces from row names
-    df.columns = ['Processes', 'Products', 'Tools']  # Rename columns
-    row_names = df.index.tolist()  # Get row names as a list
-    column_names = df.columns.tolist()  # Get column names as a list
+    original_df = pd.read_excel(file_path, index_col=0)
+    original_df.index = original_df.index.str.strip()  # Clean row names
+    original_df.columns = ['Processes', 'Products', 'Tools']  # Rename columns
+    row_names = original_df.index.tolist()
+    column_names = original_df.columns.tolist()
+    original_explanations = original_df.to_dict('index')  # Store original explanations
 except Exception as e:
     st.error(f"Error loading Excel file: {e}")
     st.stop()
 
-# Add percentages to the DataFrame
-percentages = {
+
+# Initialize default percentages
+default_percentages = {
     "Pre-Contract Motivations": {"Processes": 16, "Products": 8, "Tools": 13},
     "Post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},
     "Questioning Competence": {"Processes": 23, "Products": 13, "Tools": 6},
@@ -37,16 +39,22 @@ percentages = {
     "Immediate Profit vs Sustained Success": {"Processes": 20, "Products": 14, "Tools": 5},
 }
 
-# Validate that all rows in percentages exist in the DataFrame
-missing_percentage_rows = [row for row in percentages.keys() if row not in row_names]
-if missing_percentage_rows:
-    st.error(f"Error: The following rows in the 'percentages' dictionary do not exist in the Excel file: {missing_percentage_rows}")
-    st.stop()
+# Dynamic percentages for filter combinations
+dynamic_percentages = {
+    ('Roles', 'Consultant'): {
+        'Pre-Contract Motivations': {'Processes': 32, 'Products': 5, 'Tools': 25},
+        'Interpretation Competence': {'Products': 5},
+        'Leadership commitment to being flexible': {'Products': 10},
+        'Experimentation and learning': {'Products': 12},
+        'Defining Flexibility Related Project Objectives': {'Tools': 25},
+        'Long-term Perspective': {'Tools': 16},
+    },
+}
 
-# Add percentages to the DataFrame
-for row, cols in percentages.items():
-    for col, percent in cols.items():
-        df.at[row, col] = f"{percent}%|{df.at[row, col]}"
+
+# Initialize current percentages
+current_percentages = {row: cols.copy() for row, cols in default_percentages.items()}
+
 
 # Build definitions dictionary
 definitions = {
@@ -101,17 +109,23 @@ if apply_pressed:
         st.warning("Please select both a main filter and subfilter before applying")
         st.session_state.applied_filters = None
 
-# Calculate highlighted cells based on applied filters
+# Calculate highlighted cells based on applied filters and filter check
 filtered_quotes = {}
 highlighted_cells = []
 if st.session_state.applied_filters:
-    main_filter, subfilter = st.session_state.applied_filters
-    
-    for coord, data in cell_quotes.items():
-        if main_filter in data["filters"] and subfilter in data["filters"][main_filter]:
-            highlighted_cells.append(coord)
-            filtered_quotes[coord] = data  # Store filtered quotes correctly
+    key = (main_filter, subfilter)
+    if key in dynamic_percentages:
+        for row, cols in dynamic_percentages[key].items():
+            if row in current_percentages:
+                current_percentages[row].update(cols)
 
+# Build DataFrame with current percentages and original explanations
+df = pd.DataFrame(index=row_names, columns=column_names)
+for row in row_names:
+    for col in column_names:
+        explanation = original_explanations.get(row, {}).get(col, '')
+        percent = current_percentages.get(row, {}).get(col, 0)
+        df.at[row, col] = f"{percent}%|{explanation}"
 
 
 # Prepare data for HTML component
@@ -134,7 +148,16 @@ html = f'''
         th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
         th {{ background: #f8f9fa; position: sticky; top: 0; }}
         .highlighted {{ background: #e3f2fd !important; border: 2px solid #2196f3 !important; cursor: pointer; }}
-        
+        .cell-content {{ display: flex; flex-direction: column; justify-content: center; align-items: center; }}
+        .percentage {{
+            font-weight: bold;
+            margin-bottom: 2mm;
+            padding: 2px;
+            width: 100%;
+            text-align: center;
+            border-radius: 3px;
+        }}
+        .explanation {{ font-size: 0.9em; color: #555; }}
         /* Modal styles */
         .modal {{
             display: none;
@@ -206,18 +229,19 @@ html = f'''
     </div>
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-        function getHeatmapClass(percentage) {{
-            if (percentage <= 20) return 'heatmap-low';
-            if (percentage <= 50) return 'heatmap-medium';
-            return 'heatmap-high';
+        function getHeatmapColor(percentage) {{
+            const hue = percentage * 1.2; // Red (0) to Green (120)
+            return `hsl(${{hue}}, 100%, 50%)`;
         }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
             table.innerHTML = '';
+            // Build table headers
             let headerRow = '<tr><th>Factors</th>';
-            data.column_names.forEach(col => {{ headerRow += `<th>${{col}}</th>`; }});
+            data.column_names.forEach(col => headerRow += `<th>${{col}}</th>`);
             headerRow += '</tr>';
             table.innerHTML = headerRow;
+            // Build table body
             data.row_names.forEach((rowName, rowIndex) => {{
                 let rowHtml = `<tr><td>${{rowName}}</td>`;
                 data.column_names.forEach((colName, colIndex) => {{
@@ -225,13 +249,13 @@ html = f'''
                     const content = data.definitions[rowName][colName];
                     const [percentage, explanation] = content.split('|');
                     const percentValue = parseFloat(percentage);
-                    const heatmapClass = getHeatmapClass(percentValue);
+                    const color = getHeatmapColor(percentValue);
                     const isHighlighted = data.highlighted_cells.includes(coord);
-                    const quotes = (data.cell_quotes[coord] && data.cell_quotes[coord].quotes) ? data.cell_quotes[coord].quotes : [];
+                    const quotes = data.cell_quotes[coord]?.quotes || [];
                     rowHtml += `
                         <td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
                             <div class="cell-content">
-                                <div class="percentage ${{heatmapClass}}">${{percentage}}</div>
+                                <div class="percentage" style="background-color: ${{color}}">${{percentage}}</div>
                                 <div class="explanation">${{explanation}}</div>
                             </div>
                         </td>`;
