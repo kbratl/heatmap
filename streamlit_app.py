@@ -16,6 +16,26 @@ try:
 except Exception as e:
     st.error(f"Error loading Excel file: {e}")
     st.stop()
+# Define percentages and standardize row names
+percentages = {
+    "pre-contract motivations": {"Processes": 16, "Products": 8, "Tools": 13},
+    "post-contract motivations": {"Processes": 50, "Products": 11, "Tools": 6},
+    "questioning competence": {"Processes": 23, "Products": 13, "Tools": 6},
+    "modeling and comparing competence": {"Processes": 25, "Products": 6, "Tools": 27},
+    "interpretation competence": {"Processes": 27, "Products": 9, "Tools": 8},
+    "degree of control in management practices": {"Processes": 33, "Products": 8, "Tools": 9},
+    "leadership commitment to being flexible": {"Processes": 42, "Products": 13, "Tools": 13},
+    "experiment and learning": {"Processes": 9, "Products": 14, "Tools": 13},
+    "defining flexibility related project objectives": {"Processes": 19, "Products": 8, "Tools": 8},
+    "long-term perspective": {"Processes": 13, "Products": 11, "Tools": 9},
+}
+# Update DataFrame safely
+for row, cols in percentages.items():
+    if row in df.index:  # Ensure row exists
+        for col, percent in cols.items():
+            if col in df.columns:  # Ensure column exists
+                df.at[row, col] = f"{percent}%|{df.at[row, col]}"
+
 
 # Build definitions dictionary
 definitions = {
@@ -154,21 +174,20 @@ html = f'''
     </div>
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-        function buildMatrix() {{
+       function buildMatrix() {{
             const table = document.getElementById('matrixTable');
-            table.innerHTML = '';
-            let headerRow = '<tr><th>Factors</th>';
-            data.column_names.forEach(col => {{ headerRow += `<th>${{col}}</th>`; }});
-            headerRow += '</tr>';
-            table.innerHTML = headerRow;
+            table.innerHTML = '<tr><th>Factors</th>' + data.column_names.map(col => `<th>${{col}}</th>`).join('') + '</tr>';
             data.row_names.forEach((rowName, rowIndex) => {{
                 let rowHtml = `<tr><td>${{rowName}}</td>`;
                 data.column_names.forEach((colName, colIndex) => {{
                     const coord = `${{rowIndex}},${{colIndex}}`;
-                    const content = data.definitions[rowName][colName];
-                    const isHighlighted = data.highlighted_cells.includes(coord);
+                    const content = data.definitions[rowName][colName] || '';
+                    const [percentage, explanation] = content.split('|');
                     const quotes = data.cell_quotes[coord]?.quotes || [];
-                    rowHtml += `<td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>${{content}}</td>`;
+                    const isHighlighted = quotes.length > 0;
+                    rowHtml += `<td class="${{isHighlighted ? 'highlighted' : ''}}" data-quotes='${{JSON.stringify(quotes)}}'>
+                                    <b>${{percentage}}</b><br><small>${{explanation}}</small>
+                                </td>`;
                 }});
                 rowHtml += '</tr>';
                 table.innerHTML += rowHtml;
