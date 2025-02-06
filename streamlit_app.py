@@ -236,22 +236,22 @@ html = f'''
     </div>
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-                 function getHeatmapColor(percentage) {{
+                function getHeatmapColor(percentage) {{
             let hue, lightness, saturation;
 
             if (percentage <= 50) {{
-                // Green (120°) → Yellow (60°) for 0% to 50%
-                hue = 120 - (percentage * 1.6);
+                // Green (120°) → Yellow (60°) transition
+                hue = 120 - (percentage * 2.0);
             }} else {{
-                // Yellow (60°) → Red (0°) for 51% to 100%
-                hue = 60 - ((percentage - 50) * 2.8);  
+                // Faster Yellow (60°) → Red (0°) transition
+                hue = 60 - ((percentage - 50) * 3.5);  
             }}
 
-            // Excel-style lightness adjustment
-            lightness = 92 - (percentage * 1.1);  
+            // Darken high percentages to make them red instead of brown
+            lightness = 85 - (percentage * 1.3);  
 
-            // Ensure strong color contrast for better readability
-            saturation = 100 - (percentage * 0.2);  
+            // Higher saturation ensures strong red appearance
+            saturation = 100 - (percentage * 0.1);  
 
             return `hsl(${{hue}}, ${{saturation}}%, ${{lightness}}%)`;
         }}
