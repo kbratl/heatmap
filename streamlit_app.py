@@ -239,12 +239,12 @@ html = f'''
                         function getHeatmapColor(percentage) {{
             let hue, lightness, saturation;
 
-            if (percentage <= 50) {{
+            if (percentage <= 20) {{
                 // Green (120°) → Yellow (60°) transition
-                hue = 120 - (percentage * 2.0);
+                hue = 120 - (percentage * 4.5);
             }} else {{
                 // Yellow (60°) → Red (0°) transition
-                hue = 60 - ((percentage - 50) * 3.2);  
+                hue = 30 - ((percentage - 20) * 0.375);  
             }}
 
             // Adjusted lightness to prevent overly dark reds
