@@ -236,9 +236,24 @@ html = f'''
     </div>
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
-        function getHeatmapColor(percentage) {{
-            const hue = 120 - (percentage * 1.2);
-            return `hsl(${{hue}}, 100%, 65%)`;
+         function getHeatmapColor(percentage) {{
+            let hue, lightness, saturation;
+
+            if (percentage <= 50) {{
+                // Transition from Green (120°) → Yellow (60°) for 0% to 50%
+                hue = 120 - (percentage * 1.8);
+            }} else {{
+                // Transition from Yellow (60°) → Red (0°) for 51% to 100%
+                hue = 60 - ((percentage - 50) * 2.2);
+            }}
+
+            // Lightness should ensure high percentages are darker
+            lightness = 90 - (percentage * 0.8);  
+
+            // Saturation must be high to avoid washed-out colours
+            saturation = 100 - (percentage * 0.3);  
+
+            return `hsl(${{hue}}, ${{saturation}}%, ${{lightness}}%)`;
         }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
