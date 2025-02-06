@@ -240,18 +240,18 @@ html = f'''
             let hue, lightness, saturation;
 
             if (percentage <= 50) {{
-                // Transition from Green (120°) → Yellow (60°) for 0% to 50%
-                hue = 120 - (percentage * 1.8);
+                // Smooth Green (120°) → Yellow (60°) transition
+                hue = 120 - (percentage * 1.5);
             }} else {{
-                // Transition from Yellow (60°) → Red (0°) for 51% to 100%
-                hue = 60 - ((percentage - 50) * 2.2);
+                // Faster Yellow (60°) → Red (0°) transition
+                hue = 60 - ((percentage - 50) * 2.5);  
             }}
 
-            // Lightness should ensure high percentages are darker
-            lightness = 90 - (percentage * 0.8);  
+            // Ensure deeper red for high values
+            lightness = 88 - (percentage * 0.9);  
 
-            // Saturation must be high to avoid washed-out colours
-            saturation = 100 - (percentage * 0.3);  
+            // Adjust saturation for stronger color definition
+            saturation = 100 - (percentage * 0.4);  
 
             return `hsl(${{hue}}, ${{saturation}}%, ${{lightness}}%)`;
         }}
