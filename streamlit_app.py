@@ -239,17 +239,19 @@ html = f'''
                         function getHeatmapColor(percentage) {{
             let hue, lightness, saturation;
 
-            if (percentage <= 20) {{
+            if (percentage <= 50) {{
                 // Green (120°) → Yellow (60°) transition
-                hue = 120 - (percentage * 4.5);
+                hue = 120 - (percentage * 2.0);
             }} else {{
                 // Yellow (60°) → Red (0°) transition
-                hue = 30 - ((percentage - 20) * 0.375);  
+                hue = 60 - ((percentage - 50) * 3.2);  
             }}
 
             // Adjusted lightness to prevent overly dark reds
-            const saturation = percentange <= 20 ? 90 :85; 
-            const lightness = 85 - (percentage * 0.4);
+            lightness = 90 - (percentage * 0.9);  
+
+            // Keep saturation high for vibrant color but avoid oversaturation
+            saturation = 95 - (percentage * 0.2);  
 
             return `hsl(${{hue}}, ${{saturation}}%, ${{lightness}}%)`;
         }}
