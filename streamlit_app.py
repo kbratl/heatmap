@@ -1,4 +1,4 @@
-import streamlit as st
+ import streamlit as st
 import pandas as pd
 import json
 
@@ -237,22 +237,23 @@ html = f'''
     <script>
         const data = {json.dumps(matrix_data, ensure_ascii=False)};
                         function getHeatmapColor(percentage) {{
-            let r,g,b;
+            let hue, lightness, saturation;
 
             if (percentage <= 50) {{
                 // Green (120°) → Yellow (60°) transition
-                let ratio = percentage / 50.0;
-                r = Math.round(0+ ratio * (255 - 0));
-                g = Math.round(128 + ratio * (255 - 128));
-                b = 0;
+                hue = 120 - (percentage * 2.0);
             }} else {{
-                //  Yellow (255,255,0) to Red (255,0,0) transition
-                let ratio = = (percentage - 50) / 50.0;
-                r = 255;
-                g = Math.round(255 - ratio * 255);
-                b = 0;
+                // Yellow (60°) → Red (0°) transition
+                hue = 60 - ((percentage - 50) * 3.2);  
             }}
-            return `rgb(${{r}}, ${{g}}%, ${{b}}%)`;
+
+            // Adjusted lightness to prevent overly dark reds
+            lightness = 90 - (percentage * 0.9);  
+
+            // Keep saturation high for vibrant color but avoid oversaturation
+            saturation = 95 - (percentage * 0.2);  
+
+            return `hsl(${{hue}}, ${{saturation}}%, ${{lightness}}%)`;
         }}
         function buildMatrix() {{
             const table = document.getElementById('matrixTable');
