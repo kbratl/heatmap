@@ -31,7 +31,7 @@ default_percentages = {
     "Defining Flexibility Related Project Objectives": {"Processes": 19, "Products": 8, "Tools": 8},
     "Long-term Perspective": {"Processes": 13, "Products": 11, "Tools": 9},
     "Buffers": {"Processes": 25, "Products": 5, "Tools": 6},
-    "Slacks": {"Processes": 11, "Products": 9, "Tools": 0},
+    "Slacks": {"Processes": 11, "Products": 9, "Tools": 5},
     "Supplier-Buyer Cooperation": {"Processes": 25, "Products": 19, "Tools": 13},
     "Multidisciplinary Coordination": {"Processes": 55, "Products": 11, "Tools": 20},
     "Flexibility as Threat vs Opportunity": {"Processes": 25, "Products": 11, "Tools": 11},
