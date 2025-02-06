@@ -187,7 +187,7 @@ html = f'''
             width: 100%;
             text-align: center;
             border-radius: 3px;
-            color: white;
+            color: black;
         }}
         .explanation {{ font-size: 0.9em; color: #555; }}
         /* Modal Styles */
